@@ -7,14 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/components/NotesPicker.dart';
+import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/NotesProvider.dart';
 import 'package:permission_handler/permission_handler.dart';
-// Android persistent folder access
-// macOS persistent folder access
-// import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
-// import 'package:saf/saf.dart';
+import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class InitialScreen extends ConsumerStatefulWidget {
   const InitialScreen({super.key});
@@ -28,14 +27,15 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _macosBookmark; // Store the bookmark string
 
   @override
   void initState() {
     super.initState();
-    requestAllFilesAccessAndReadNotes().then((status) {
-      log("Permission status: $status");
-      if (status) {
-        loadNotesDirectories();
+    requestAllFilesAccessAndReadNotes().then((path) {
+      log("got permission for path: $path");
+      if (path != null) {
+        loadNotesDirectories(path);
       }
     });
   }
@@ -55,35 +55,86 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     }
   }
 
-  Future<bool> requestAllFilesAccessAndReadNotes() async {
+  Future<String?> requestAllFilesAccessAndReadNotes() async {
     if (Platform.isAndroid) {
       PermissionStatus status = await Permission.manageExternalStorage
           .request();
       if (status.isGranted) {
-        return true;
+        return "";
       } else if (status.isDenied) {
-        // await openAppSettings();
-        return false; // Permission denied, return false
+        return null;
       } else if (status.isPermanentlyDenied) {
         log(
           "MANAGE_EXTERNAL_STORAGE permanently denied. Please go to settings.",
         );
-        return await openAppSettings();
+        await openAppSettings();
+        return null;
       }
-      return false; // Other statuses (restricted, limited, etc.)
+      return null;
+    } else if (Platform.isMacOS) {
+      // Use SecureBookmarks to request folder access and persist bookmark
+      try {
+        String? bookmark = prefs?.getString(macosFolderBookmark);
+        // String? bookmark = null;
+        if (bookmark == null) {
+          return pickMacosFolderBookmark();
+        } else {
+          log('macOS folder bookmark found: $bookmark');
+          final path = await getMacosFolderBookmark(bookmark);
+          log("resolved path: $path");
+          try {
+            Directory(path!).listSync();
+          } catch (e) {
+            return pickMacosFolderBookmark();
+          }
+          return path;
+        }
+      } catch (e) {
+        log('macOS folder permission error: $e');
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<String?> getMacosFolderBookmark(String bookmark) async {
+    final resolvedDir = await SecureBookmarks().resolveBookmark(
+      bookmark,
+      isDirectory: true,
+    );
+    if (resolvedDir is Directory) {
+      return resolvedDir.path;
+    } else {
+      await prefs?.remove(macosFolderBookmark);
+      return null;
     }
   }
 
-  Future<void> loadNotesDirectories() async {
+  Future<String?> pickMacosFolderBookmark() async {
+    log("bookmark not found, requesting folder access...");
+    String? folderPath = await FilePicker.platform.getDirectoryPath();
+    log("picked folder path: $folderPath");
+    if (folderPath == null) return null;
+    final dir = Directory(folderPath);
+    final newBookmark = await SecureBookmarks().bookmark(dir);
+    await prefs?.setString(macosFolderBookmark, newBookmark);
+    log('macOS folder bookmark saved.');
+    return folderPath;
+  }
+
+  Future<void> loadNotesDirectories(String path) async {
     final notesDirNotifier = ref.read(notesDirProvider.notifier);
-    await notesDirNotifier.updateNotesDir();
+    await notesDirNotifier.updateNotesDir(path);
     final selectedNotesName = prefs?.getString('selectedNotes');
     if (selectedNotesName != null) {
       final selectedNode = await notesDirNotifier.findNotesDir(
         selectedNotesName,
       );
       if (selectedNode != null && mounted) {
-        context.go('/home', extra: selectedNode);
+        context.go(
+          '/home',
+          extra: (projectNode: selectedNode, curFileNode: null),
+        );
       }
     }
   }
@@ -115,7 +166,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
                         return NotesPicker(
                           searchController: _searchController,
                           onPick: (node) {
-                            context.go('/home', extra: node);
+                            context.go('/home', extra: (projectNode: node));
                           },
                         );
                       });

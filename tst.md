@@ -7,6 +7,12 @@
 - [Kotlin Function](#kotlin-Function)
 - [Dart Function](#dart-function-1)
 - [Random(int a, int b)](#randomint-a-int-b)
+- [Sample `test(a)`](#sample-testa)
+- [Test](#function-randomint-a)
+- [Test](#function-randomint-a)
+  | hi | hello |
+  | --- | ----- |
+  | hi | hello |
 
 ## Js Function
 
@@ -32,6 +38,8 @@ def add(a, b):
 ```
 
 ## Java Function
+
+## Sample `test(a)`
 
 ```java
 public int add(int a, int b) {
@@ -69,3 +77,5 @@ int add(int a, int b) {
 def random(a, b):
     return a + b
 ```
+
+# Function `Random(int a)`

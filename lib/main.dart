@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/screens/file_select_screen.dart';
 import 'package:markdown_notes/screens/home.dart';
@@ -10,11 +11,9 @@ import 'package:markdown_notes/screens/initial_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 SharedPreferences? prefs;
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.getInstance().then((value) {
-    prefs = value;
-  });
+  prefs = await SharedPreferences.getInstance();
   runApp(ProviderScope(child: const MainApp()));
 }
 
@@ -34,7 +33,7 @@ class MainApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: false,
         colorScheme: darkSchema,
-        scaffoldBackgroundColor: Color.fromARGB(255, 11, 18, 29),
+        scaffoldBackgroundColor: scaffoldDarkBackgroundColor,
       ),
       routerConfig: router,
     );
@@ -47,8 +46,13 @@ final router = GoRouter(
     GoRoute(
       path: '/home',
       pageBuilder: (context, state) {
+        final data =
+            state.extra as ({FileNode projectNode, FileNode? curFileNode});
         return MaterialPage(
-          child: HomeScreen(projectNode: state.extra as FileNode),
+          child: HomeScreen(
+            projectNode: data.projectNode,
+            curFileNode: data.curFileNode,
+          ),
         );
       },
     ),

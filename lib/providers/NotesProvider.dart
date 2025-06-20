@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/screens/file_select_screen.dart';
 
@@ -13,8 +14,13 @@ class NotesDirProvider extends Notifier<List<FileNode>> {
     return [];
   }
 
-  Future<List<FileNode>> updateNotesDir() async {
-    final nodes = await readDirectoryTree('/storage/emulated/0/Notes');
+  Future<List<FileNode>> updateNotesDir(String path) async {
+    late List<FileNode> nodes = [];
+    if (Platform.isAndroid) {
+      nodes = await readDirectoryTree(path);
+    } else if (Platform.isMacOS) {
+      nodes = await readDirectoryTree(path);
+    }
     state = nodes;
     log("notes length: ${nodes.length}");
     return nodes;
@@ -31,7 +37,10 @@ final notesDirProvider = NotifierProvider<NotesDirProvider, List<FileNode>>(
 
 Future<List<FileNode>> readDirectoryTree(String rootPath) async {
   final dir = Directory(rootPath);
-  if (!await dir.exists()) return [];
+  if (!await dir.exists()) {
+    log("directory does not exist: $rootPath");
+    return [];
+  }
   final List<FileNode> nodes = [];
   final List<FileSystemEntity> entities = await dir.list().toList();
   for (final entity in entities) {
