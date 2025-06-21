@@ -87,14 +87,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: Column(
         children: [
           _buildSwitch(
-            'Show file history in sidebar',
+            'Maintain history for sidebar',
             Settings.sidebarFileHistory,
             (value) {
               Settings.sidebarFileHistory = value;
               setState(() {});
             },
           ),
-          _buildSwitch('Show file history in links', Settings.linkFileHistory, (
+          _buildSwitch('Maintain histor for links', Settings.linkFileHistory, (
             value,
           ) {
             Settings.linkFileHistory = value;

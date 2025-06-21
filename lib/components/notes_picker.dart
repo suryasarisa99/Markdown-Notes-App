@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,7 @@ class NotesPicker extends ConsumerStatefulWidget {
 
 class _NotesPickerState extends ConsumerState<NotesPicker> {
   List<FileNode> _filteredSidebarNodes = [];
+  late List<FileNode> _allSidebarNodes = ref.read(notesDirProvider);
   FocusNode focusNode = FocusNode();
 
   @override
@@ -52,12 +54,11 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
     final query = widget.searchController.text.toLowerCase();
     setState(() {
       if (query.isNotEmpty) {
-        _filteredSidebarNodes = ref.read(notesDirProvider).where((node) {
+        _filteredSidebarNodes = _allSidebarNodes.where((node) {
           return node.name.toLowerCase().contains(query);
         }).toList();
       }
     });
-    // _debounce = Timer(const Duration(milliseconds: 300), () {});
   }
 
   void _onFileSelected(FileNode node) {
