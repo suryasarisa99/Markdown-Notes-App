@@ -12,6 +12,7 @@ import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
+import 'package:markdown_notes/utils/macos_file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,7 +54,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       PermissionStatus status = await Permission.manageExternalStorage
           .request();
       if (status.isGranted) {
-        return Settings.androidDir;
+        return Settings.location;
       } else if (status.isDenied) {
         return null;
       } else if (status.isPermanentlyDenied) {
@@ -70,7 +71,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
         String? bookmark = prefs?.getString(macosFolderBookmark);
         // String? bookmark = null;
         if (bookmark == null) {
-          return _pickMacosFolderBookmark();
+          return pickMacosFolderBookmark();
         } else {
           log('macOS folder bookmark found: $bookmark');
           final path = await _getMacosFolderBookmark(bookmark);
@@ -78,7 +79,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
           try {
             Directory(path!).listSync();
           } catch (e) {
-            return _pickMacosFolderBookmark();
+            return pickMacosFolderBookmark();
           }
           return path;
         }
@@ -101,18 +102,6 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       await prefs?.remove(macosFolderBookmark);
       return null;
     }
-  }
-
-  Future<String?> _pickMacosFolderBookmark() async {
-    log("bookmark not found, requesting folder access...");
-    String? folderPath = await FilePicker.platform.getDirectoryPath();
-    log("picked folder path: $folderPath");
-    if (folderPath == null) return null;
-    final dir = Directory(folderPath);
-    final newBookmark = await SecureBookmarks().bookmark(dir);
-    await prefs?.setString(macosFolderBookmark, newBookmark);
-    log('macOS folder bookmark saved.');
-    return folderPath;
   }
 
   Future<void> _loadNotesDirectories(String path) async {
