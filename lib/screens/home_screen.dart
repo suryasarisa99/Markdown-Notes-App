@@ -424,11 +424,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: _showPicker,
                                 child: Text('Open Notes Directory'),
                               ),
-                              PopupMenuItem(
-                                height: 40,
-                                onTap: _goTop,
-                                child: Text('Scroll to Top'),
-                              ),
+                              if (curFileNode != null)
+                                PopupMenuItem(
+                                  height: 40,
+                                  onTap: _goTop,
+                                  child: Text('Scroll to Top'),
+                                ),
                             ],
                           );
                         },
@@ -474,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Center(child: Text('Open File', style: TextStyle(fontSize: 18))),
       );
     }
-    if (!isMarkdownFile!) {
+    if (!isMarkdownFile) {
       return CodeBlock(
         codeContent: _htmlText,
         isDarkMode: isDarkMode,
