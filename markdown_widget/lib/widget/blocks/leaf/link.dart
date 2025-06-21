@@ -20,6 +20,7 @@ class LinkNode extends ElementNode {
   @override
   InlineSpan build() {
     final url = attributes['href'] ?? '';
+    linkConfig.onBuild?.call(url);
     return TextSpan(children: [
       for (final child in children)
         _toLinkInlineSpan(
@@ -50,11 +51,13 @@ class LinkNode extends ElementNode {
 class LinkConfig implements LeafConfig {
   final TextStyle style;
   final ValueCallback<String>? onTap;
+  final Function(String url)? onBuild;
 
   const LinkConfig(
       {this.style = const TextStyle(
           color: Color(0xff0969da), decoration: TextDecoration.underline),
-      this.onTap});
+      this.onTap,
+      this.onBuild});
 
   @nonVirtual
   @override
