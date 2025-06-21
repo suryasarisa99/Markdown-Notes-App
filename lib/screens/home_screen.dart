@@ -16,6 +16,7 @@ import 'package:markdown_notes/components/side_bar.dart';
 import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
+import 'package:markdown_notes/theme.dart';
 
 enum FileOpenType {
   fromSidebar("sidebar"),
@@ -322,16 +323,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     _renderedAnchorCounts.clear();
-    final currentBrightness = Theme.of(context).brightness;
-    final isDarkMode = currentBrightness == Brightness.dark;
+    final brightness = Theme.of(context).brightness;
+    final theme = AppTheme.from(brightness);
+    final isDarkMode = brightness == Brightness.dark;
     final backgroundColor = isDarkMode
         ? codeBlockDarkTheme['root']?.backgroundColor
         : codeBlockLightTheme['root']?.backgroundColor;
-    final conditionalBg = !isMarkdownFile
-        ? backgroundColor
-        : isDarkMode
-        ? scaffoldDarkBackgroundColor
-        : scaffoldLightBackgroundColor;
+    final conditionalBg = !isMarkdownFile ? backgroundColor : theme.background;
 
     return FocusScope(
       autofocus: true,
@@ -407,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               0.0,
                             ),
                             menuPadding: const EdgeInsets.all(0.0),
-                            color: const Color.fromARGB(255, 22, 32, 48),
+                            // color: theme.surface,
                             items: [
                               PopupMenuItem(
                                 height: 40,
@@ -438,7 +436,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: IconButton(
                       icon: Icon(
                         HugeIcons.strokeRoundedSidebarLeft,
-                        color: const Color.fromARGB(255, 163, 163, 163),
+                        // color: const Color(0xFF8895B1),
+                        color: theme.iconColor,
                       ),
                       onPressed: _openDrawer,
                     ),
@@ -454,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         right: 6,
                         top: 18,
                       ),
-                      child: _buildBody(isDarkMode),
+                      child: _buildBody(isDarkMode, theme),
                     ),
                   ),
                 ],
@@ -466,7 +465,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBody(bool isDarkMode) {
+  Widget _buildBody(bool isDarkMode, AppColors theme) {
     if (curFileNode == null) {
       final query = MediaQuery.of(context);
       final height = query.size.height - kToolbarHeight - query.padding.top;
@@ -480,6 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
         codeContent: _htmlText,
         isDarkMode: isDarkMode,
         language: curFileNode?.name.split('.').last,
+        isFullSize: true,
       );
     } else {
       return Html(
@@ -552,32 +552,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 case 'h1':
                   styleRecord = (
                     fontSize: 28.0,
-                    color: const Color(0xFFFF5EC7),
+                    color: theme.markdownColors.h1,
                   );
                   break;
                 case 'h2':
                   styleRecord = (
                     fontSize: 25.0,
-                    color: const Color(0xFF89C940),
+                    color: theme.markdownColors.h2,
                   );
                   break;
                 case 'h3':
                   styleRecord = (
                     fontSize: 22.0,
-                    color: const Color(0xFF3FA9FF),
+                    color: theme.markdownColors.h3,
                   );
                   break;
                 case 'h4':
                   styleRecord = (
                     fontSize: 20.0,
-                    color: const Color(0xFFB75B3A),
+                    color: theme.markdownColors.h4,
                   );
                   break;
                 case 'h5':
-                  styleRecord = (fontSize: 18.0, color: Colors.teal);
+                  styleRecord = (
+                    fontSize: 18.0,
+                    color: theme.markdownColors.h5,
+                  );
                   break;
                 case 'h6':
-                  styleRecord = (fontSize: 16.0, color: Colors.grey);
+                  styleRecord = (
+                    fontSize: 16.0,
+                    color: theme.markdownColors.h6,
+                  );
                   break;
                 default:
                   styleRecord = (
@@ -625,9 +631,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ? styleRecord.fontSize - 2
                                     : styleRecord.fontSize,
                                 color: styleRecord.color,
-                                // color: part.code
-                                //     ? Colors.blue
-                                //     : styleRecord.color,
+
                                 fontWeight: part.code
                                     ? FontWeight.bold
                                     : FontWeight.normal,
@@ -685,14 +689,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     vertical: 2.5,
                   ),
                   decoration: BoxDecoration(
-                    color: Color(0xFF252C36),
+                    color: theme.markdownColors.inlineCodeBg,
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                   child: Text(
                     codeContent,
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      backgroundColor: Color(0xFF252C36),
+                    style: TextStyle(
+                      color: theme.markdownColors.inlineCodeTxt,
                       fontSize: 14.0,
                     ),
                   ),

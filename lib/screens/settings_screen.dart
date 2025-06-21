@@ -3,19 +3,24 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:markdown_notes/data/settings.dart';
+import 'package:markdown_notes/providers/theme_provider.dart';
+import 'package:markdown_notes/theme.dart';
 import 'package:markdown_notes/utils/macos_file_picker.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final TextEditingController _pathController = TextEditingController();
+  final _themeController = TextEditingController(text: Settings.theme);
+
   Widget _buildSwitch(String title, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       activeColor: Theme.of(context).colorScheme.primary,
@@ -65,12 +70,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = AppTheme.from(Theme.of(context).brightness);
     final labelStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
       // color: Colors.grey.shade300,
     );
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         title: const Text('Settings'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -93,8 +98,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value,
           ) {
             Settings.linkFileHistory = value;
+
             setState(() {});
           }),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Text("Theme", style: labelStyle),
+                const Spacer(),
+                DropdownMenu<String>(
+                  controller: _themeController,
+                  menuStyle: MenuStyle(),
+                  enableFilter: false,
+                  enableSearch: false,
+                  width: 135,
+                  alignmentOffset: const Offset(15, 8),
+                  inputDecorationTheme: InputDecorationTheme(
+                    isDense: true,
+                    suffixIconConstraints: const BoxConstraints(
+                      maxHeight: 42,
+                      maxWidth: 40,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 32.0,
+                      vertical: 0.0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  trailingIcon: const Icon(
+                    HugeIcons.strokeRoundedAbacus,
+                    size: 20,
+                  ),
+
+                  // prevent to  show keyboard ( prevent edit text field )
+                  requestFocusOnTap: false,
+                  initialSelection: Settings.theme,
+                  onSelected: (value) {
+                    if (value != null) {
+                      _themeController.text = value;
+                      ref.read(themeModeProvider.notifier).update(value);
+                    }
+                  },
+                  dropdownMenuEntries: const [
+                    DropdownMenuEntry(
+                      value: "light",
+                      label: "Light",
+                      trailingIcon: Icon(Icons.sunny),
+                    ),
+                    DropdownMenuEntry(
+                      value: "dark",
+                      label: "Dark",
+                      trailingIcon: Icon(Icons.brightness_3),
+                    ),
+                    DropdownMenuEntry(
+                      value: "system",
+                      label: "System",
+                      trailingIcon: Icon(Icons.brightness_auto),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -134,7 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   splashRadius: 24,
                   icon: Icon(
                     HugeIcons.strokeRoundedFolderEdit,
-                    color: Colors.grey.shade300,
+                    color: theme.iconColor,
                   ),
                 ),
               ],

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/components/expansion_folder.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
+import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/screens/file_select_screen.dart';
+import 'package:markdown_notes/theme.dart';
 
 class FileSidebar extends StatelessWidget {
   final FileNode node;
@@ -20,47 +22,47 @@ class FileSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // log("Building sidebar with ${nodes.length} nodes");
-    return Container(
+    return Drawer(
       width: 350,
-      padding: EdgeInsets.only(
-        left: 10,
-        right: 8,
-        top: MediaQuery.paddingOf(context).top + 8,
-      ),
-      color: const Color.fromARGB(255, 19, 29, 44),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () {
-                context.pop();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) {
-                    return NotesPicker(
-                      searchController: TextEditingController(),
-                      hasFocus: true,
-                      onPick: onDirectoryChange,
-                    );
-                  },
-                );
-              },
-              child: Text(
-                node.name,
-                style: const TextStyle(color: Colors.white),
+      // color: const Color.fromARGB(255, 19, 29, 44),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 10,
+          right: 8,
+          top: MediaQuery.paddingOf(context).top + 8,
+        ),
+        child: Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  context.pop();
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) {
+                      return NotesPicker(
+                        searchController: TextEditingController(),
+                        hasFocus: true,
+                        onPick: onDirectoryChange,
+                      );
+                    },
+                  );
+                },
+                child: Text(node.name),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(0.0),
-              children: node.children.map((node) => _buildNode(node)).toList(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(0.0),
+                children: node.children
+                    .map((node) => _buildNode(node))
+                    .toList(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

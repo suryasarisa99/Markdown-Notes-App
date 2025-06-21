@@ -8,6 +8,7 @@ import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/screens/file_select_screen.dart';
+import 'package:markdown_notes/theme.dart';
 
 class NotesPicker extends ConsumerStatefulWidget {
   final TextEditingController searchController;
@@ -68,6 +69,9 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
   @override
   Widget build(BuildContext context) {
     final nodes = ref.watch(notesDirProvider);
+    final brightness = Theme.of(context).brightness;
+    final theme = AppTheme.from(brightness);
+    final appTheme = Theme.of(context);
     log("nodes: ${nodes.length}");
     return DraggableScrollableSheet(
       maxChildSize: 0.9,
@@ -80,7 +84,7 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
             return Container(
               padding: const EdgeInsets.all(16.0),
               height: 300,
-              color: const Color(0xFF131D2C),
+              color: theme.surface,
               width: double.infinity,
               child: Column(
                 children: [
@@ -137,13 +141,14 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
                                   decoration: BoxDecoration(
                                     border: hasFocus
                                         ? Border.all(
-                                            color: const Color(0xFF2476B9),
-                                            width: 1.5,
+                                            color: appTheme.colorScheme.primary,
+                                            width: 2,
                                           )
                                         : null,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: ListTile(
+                                    minTileHeight: 40,
                                     // dense: true,
                                     minVerticalPadding: 0,
                                     contentPadding: const EdgeInsets.symmetric(

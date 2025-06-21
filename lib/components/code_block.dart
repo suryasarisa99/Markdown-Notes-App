@@ -6,32 +6,44 @@ class CodeBlock extends StatelessWidget {
   final String codeContent;
   final String? language;
   final bool isDarkMode;
+  final bool isFullSize;
   const CodeBlock({
     required this.codeContent,
     this.language,
     this.isDarkMode = false,
+    this.isFullSize = false,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = isDarkMode ? codeBlockDarkTheme : codeBlockLightTheme;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Container(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
-        decoration: BoxDecoration(
-          color: theme['root']?.backgroundColor,
-          borderRadius: BorderRadius.circular(6.0),
-        ),
+    return Container(
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+      decoration: BoxDecoration(
+        color: theme['root']?.backgroundColor,
+        borderRadius: BorderRadius.circular(6.0),
+        border: !isFullSize
+            ? Border.all(color: const Color(0x13000000), width: 1.0)
+            : null,
+        boxShadow: !isFullSize
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF000000).withValues(alpha: 0.08),
+                  blurRadius: 4.0,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: HighlightView(
           codeContent,
-          language: language ?? 'dart',
+          language: language,
           theme: theme,
           textStyle: const TextStyle(
             fontFamily: 'JetBrainsMonoNL',
-            // fontFamily: 'DankMonoNerd',
-            // fontFamily: 'ZedPlexMono',
             fontSize: 14.0,
             height: 1.3,
           ),
