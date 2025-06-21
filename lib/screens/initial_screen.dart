@@ -6,11 +6,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:markdown_notes/components/NotesPicker.dart';
+import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/constants.dart';
+import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
-import 'package:markdown_notes/providers/NotesProvider.dart';
+import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,44 +24,36 @@ class InitialScreen extends ConsumerStatefulWidget {
 }
 
 class _InitialScreenState extends ConsumerState<InitialScreen> {
-  FileNode? _selectedNode;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  String? _macosBookmark; // Store the bookmark string
 
   @override
   void initState() {
     super.initState();
-    requestAllFilesAccessAndReadNotes().then((path) {
-      log("got permission for path: $path");
-      if (path != null) {
-        loadNotesDirectories(path);
-      }
-    });
-  }
 
-  Future<void> pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null) {
-      String filePath = result.files.single.path!;
-      log('Picked file: $filePath');
-      String fileContent = await File(filePath).readAsString();
-      if (mounted) {
-        context.push("/", extra: fileContent);
-      }
+    final isNotFirstTime = prefs!.getBool("isNotFirstTime");
+    log("isNotFirstTime: $isNotFirstTime");
+    if (isNotFirstTime == null || !isNotFirstTime) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showPopup();
+      });
     } else {
-      log('No file selected');
+      _requestAllFilesAccessAndReadNotes().then((path) {
+        log("got permission for path: $path");
+        if (path != null) {
+          _loadNotesDirectories(path);
+        }
+      });
     }
   }
 
-  Future<String?> requestAllFilesAccessAndReadNotes() async {
+  Future<String?> _requestAllFilesAccessAndReadNotes() async {
     if (Platform.isAndroid) {
       PermissionStatus status = await Permission.manageExternalStorage
           .request();
       if (status.isGranted) {
-        return "";
+        return Settings.androidDir;
       } else if (status.isDenied) {
         return null;
       } else if (status.isPermanentlyDenied) {
@@ -77,15 +70,15 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
         String? bookmark = prefs?.getString(macosFolderBookmark);
         // String? bookmark = null;
         if (bookmark == null) {
-          return pickMacosFolderBookmark();
+          return _pickMacosFolderBookmark();
         } else {
           log('macOS folder bookmark found: $bookmark');
-          final path = await getMacosFolderBookmark(bookmark);
+          final path = await _getMacosFolderBookmark(bookmark);
           log("resolved path: $path");
           try {
             Directory(path!).listSync();
           } catch (e) {
-            return pickMacosFolderBookmark();
+            return _pickMacosFolderBookmark();
           }
           return path;
         }
@@ -97,7 +90,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     return null;
   }
 
-  Future<String?> getMacosFolderBookmark(String bookmark) async {
+  Future<String?> _getMacosFolderBookmark(String bookmark) async {
     final resolvedDir = await SecureBookmarks().resolveBookmark(
       bookmark,
       isDirectory: true,
@@ -110,7 +103,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     }
   }
 
-  Future<String?> pickMacosFolderBookmark() async {
+  Future<String?> _pickMacosFolderBookmark() async {
     log("bookmark not found, requesting folder access...");
     String? folderPath = await FilePicker.platform.getDirectoryPath();
     log("picked folder path: $folderPath");
@@ -122,7 +115,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     return folderPath;
   }
 
-  Future<void> loadNotesDirectories(String path) async {
+  Future<void> _loadNotesDirectories(String path) async {
     final notesDirNotifier = ref.read(notesDirProvider.notifier);
     await notesDirNotifier.updateNotesDir(path);
     final selectedNotesName = prefs?.getString('selectedNotes');
@@ -136,6 +129,10 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
           extra: (projectNode: selectedNode, curFileNode: null),
         );
       }
+    } else {
+      if (mounted) {
+        _showBottomSheet();
+      }
     }
   }
 
@@ -146,39 +143,72 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     super.dispose();
   }
 
+  void _showPopup() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Permission to Access Notes'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'To access your notes, we need permission to read files on your device. '
+                'Please select the directory where your notes are stored.',
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _requestAllFilesAccessAndReadNotes().then((path) {
+                  log("got permission for path: $path");
+                  if (path != null) {
+                    prefs?.setBool("isNotFirstTime", true);
+                    context.pop();
+                    _loadNotesDirectories(path);
+                  }
+                });
+              },
+              child: const Text('Grant Permission'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showBottomSheet() {
+    scaffoldKey.currentState!.showBottomSheet((context) {
+      return NotesPicker(
+        searchController: _searchController,
+        canClose: false,
+        onPick: (node) {
+          context.go('/home', extra: (projectNode: node, curFileNode: null));
+        },
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    log("rebuilding...");
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(title: const Text('Select File')),
-      body: Row(
+      body: Column(
         children: [
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      scaffoldKey.currentState!.showBottomSheet((context) {
-                        return NotesPicker(
-                          searchController: _searchController,
-                          onPick: (node) {
-                            context.go('/home', extra: (projectNode: node));
-                          },
-                        );
-                      });
-                    },
-                    child: const Text('Select File'),
-                  ),
-                  _selectedNode == null
-                      ? const Text('No file selected')
-                      : Text("selected: ${_selectedNode!.name}"),
-                ],
-              ),
-            ),
+          Expanded(child: Center(child: CircularProgressIndicator())),
+          TextButton(
+            onPressed: () {
+              _showBottomSheet();
+            },
+            child: const Text('Select Notes Directory'),
           ),
         ],
       ),

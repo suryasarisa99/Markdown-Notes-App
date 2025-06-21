@@ -9,4 +9,6 @@ class FileNode {
     required this.isDirectory,
     this.children = const [],
   });
+
+  FileNode.empty() : name = '', path = '', isDirectory = false, children = [];
 }

@@ -41,12 +41,13 @@ Future<List<FileNode>> readDirectoryTree(String rootPath) async {
     log("directory does not exist: $rootPath");
     return [];
   }
-  final List<FileNode> nodes = [];
+  final List<FileNode> directories = [];
+  final List<FileNode> files = [];
   final List<FileSystemEntity> entities = await dir.list().toList();
   for (final entity in entities) {
     final name = entity.path.split('/').last;
     if (entity is Directory) {
-      nodes.add(
+      directories.add(
         FileNode(
           name: name,
           path: entity.path,
@@ -55,8 +56,9 @@ Future<List<FileNode>> readDirectoryTree(String rootPath) async {
         ),
       );
     } else if (entity is File) {
-      nodes.add(FileNode(name: name, path: entity.path, isDirectory: false));
+      files.add(FileNode(name: name, path: entity.path, isDirectory: false));
     }
   }
-  return nodes;
+  // Directories first, then files
+  return [...directories, ...files];
 }
