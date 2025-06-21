@@ -3,9 +3,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
-import 'package:markdown_notes/screens/file_select_screen.dart';
 
 class NotesDirProvider extends Notifier<List<FileNode>> {
   NotesDirProvider() : super();

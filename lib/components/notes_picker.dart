@@ -1,14 +1,11 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
-import 'package:markdown_notes/screens/file_select_screen.dart';
 import 'package:markdown_notes/theme.dart';
 
 class NotesPicker extends ConsumerStatefulWidget {

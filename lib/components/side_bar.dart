@@ -1,13 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:markdown_notes/components/expansion_folder.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
-import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
-import 'package:markdown_notes/screens/file_select_screen.dart';
-import 'package:markdown_notes/theme.dart';
 
 class FileSidebar extends StatelessWidget {
   final FileNode node;

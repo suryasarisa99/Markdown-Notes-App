@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,12 +9,10 @@ import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/main.dart';
-import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/utils/macos_file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class InitialScreen extends ConsumerStatefulWidget {
   const InitialScreen({super.key});

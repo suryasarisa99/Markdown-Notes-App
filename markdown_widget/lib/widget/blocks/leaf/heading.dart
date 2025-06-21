@@ -21,6 +21,7 @@ class HeadingNode extends ElementNode {
     if (divider == null) return childrenSpan;
     return WidgetSpan(
       child: Padding(
+        key: headingConfig.key,
         padding: headingConfig.padding,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -97,6 +98,7 @@ abstract class HeadingConfig implements LeafConfig {
   const HeadingConfig();
 
   TextStyle get style;
+  Key? get key;
 
   HeadingDivider? get divider => null;
 
@@ -107,13 +109,16 @@ abstract class HeadingConfig implements LeafConfig {
 class H1Config extends HeadingConfig {
   @override
   final TextStyle style;
+  @override
+  final Key? key;
 
   const H1Config(
       {this.style = const TextStyle(
         fontSize: 32,
         height: 40 / 32,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override
@@ -135,13 +140,16 @@ class H1Config extends HeadingConfig {
 class H2Config extends HeadingConfig {
   @override
   final TextStyle style;
+  @override
+  final Key? key;
 
   const H2Config(
       {this.style = const TextStyle(
         fontSize: 24,
         height: 30 / 24,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override
@@ -163,13 +171,16 @@ class H2Config extends HeadingConfig {
 class H3Config extends HeadingConfig {
   @override
   final TextStyle style;
+  @override
+  final Key? key;
 
   const H3Config(
       {this.style = const TextStyle(
         fontSize: 20,
         height: 25 / 20,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override
@@ -191,13 +202,16 @@ class H3Config extends HeadingConfig {
 class H4Config extends HeadingConfig {
   @override
   final TextStyle style;
+  @override
+  final Key? key;
 
   const H4Config(
       {this.style = const TextStyle(
         fontSize: 16,
         height: 20 / 16,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override
@@ -216,13 +230,15 @@ class H4Config extends HeadingConfig {
 class H5Config extends HeadingConfig {
   @override
   final TextStyle style;
-
+  @override
+  final Key? key;
   const H5Config(
       {this.style = const TextStyle(
         fontSize: 16,
         height: 20 / 16,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override
@@ -241,13 +257,16 @@ class H5Config extends HeadingConfig {
 class H6Config extends HeadingConfig {
   @override
   final TextStyle style;
+  @override
+  final Key? key;
 
   const H6Config(
       {this.style = const TextStyle(
         fontSize: 16,
         height: 20 / 16,
         fontWeight: FontWeight.bold,
-      )});
+      ),
+      this.key});
 
   @nonVirtual
   @override

@@ -8,13 +8,14 @@ import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
 import 'package:markdown_notes/screens/initial_screen.dart';
 import 'package:markdown_notes/screens/settings_screen.dart';
+import 'package:markdown_notes/screens/test_screen.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 SharedPreferences? prefs;
 void main() async {
   final router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/test',
     routes: [
       GoRoute(
         path: '/home',
@@ -37,6 +38,10 @@ void main() async {
       GoRoute(
         path: '/',
         pageBuilder: (_, __) => const MaterialPage(child: InitialScreen()),
+      ),
+      GoRoute(
+        path: '/test',
+        pageBuilder: (_, __) => const MaterialPage(child: TestScreen()),
       ),
       GoRoute(
         path: '/settings',
