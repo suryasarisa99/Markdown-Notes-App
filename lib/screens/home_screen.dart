@@ -545,10 +545,12 @@ class _HomeScreenState extends State<HomeScreen> {
               final text = extContext.innerHtml;
               final anchor = _getAnchorForHeading(text);
               final key = _anchorKeys[anchor];
-              // Define a record to hold fontSize and color
+              final tagName = extContext.element?.localName!;
+              final isLargeText =
+                  tagName == 'h1' || tagName == 'h2' || tagName == 'h3';
               ({double fontSize, Color color}) styleRecord;
 
-              switch (extContext.element?.localName) {
+              switch (tagName) {
                 case 'h1':
                   styleRecord = (
                     fontSize: 28.0,
@@ -593,16 +595,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         Colors.black,
                   );
               }
-              // final arr = text.split(r"<code>.*</code>");
-              // log arr
-              // log("arr: $arr");
+
               final textParts = _parseHeadingContent(text);
               return Column(
                 children: [
                   Container(
                     key: key,
                     width: double.infinity,
-                    margin: const EdgeInsets.only(top: 32, bottom: 8),
+                    margin: const EdgeInsets.only(top: 32, bottom: 6),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -617,7 +617,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: part.code
                                 ? const EdgeInsets.symmetric(horizontal: 12.0)
                                 : EdgeInsets.zero,
-
                             decoration: BoxDecoration(
                               color: part.code
                                   ? styleRecord.color.withValues(alpha: 0.2)
@@ -641,18 +640,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         }).toList(),
                       ),
                     ),
-                    // child: Text(
-                    //   text
-                    //       .replaceAll("<code>", "")
-                    //       .replaceAll("</code>", ""),
-                    //   style: TextStyle(
-                    //     fontSize: styleRecord.fontSize,
-                    //     color: styleRecord.color,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
                   ),
-                  Divider(color: styleRecord.color),
+                  if (isLargeText) Divider(color: styleRecord.color),
                 ],
               );
             },
