@@ -23,12 +23,14 @@ class FileSidebar extends StatelessWidget {
     // log("Building sidebar with ${nodes.length} nodes");
     return Container(
       width: 350,
+      padding: EdgeInsets.only(
+        left: 10,
+        right: 8,
+        top: MediaQuery.paddingOf(context).top + 8,
+      ),
       color: const Color.fromARGB(255, 19, 29, 44),
       child: Column(
         children: [
-          Padding(
-            padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
-          ),
           SizedBox(
             width: double.infinity,
             child: TextButton(
