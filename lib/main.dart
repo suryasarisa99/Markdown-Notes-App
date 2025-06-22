@@ -8,25 +8,19 @@ import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
 import 'package:markdown_notes/screens/initial_screen.dart';
 import 'package:markdown_notes/screens/settings_screen.dart';
-import 'package:markdown_notes/screens/test_screen.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 SharedPreferences? prefs;
 void main() async {
   final router = GoRouter(
-    initialLocation: '/test',
+    initialLocation: '/',
     routes: [
       GoRoute(
         path: '/home',
         pageBuilder: (context, state) {
           final data =
-              state.extra as ({FileNode projectNode, FileNode? curFileNode})?;
-          if (data == null) {
-            return const MaterialPage(
-              child: Scaffold(body: Text("Missing navigation data")),
-            );
-          }
+              state.extra as ({FileNode projectNode, FileNode? curFileNode});
           return MaterialPage(
             child: HomeScreen(
               projectNode: data.projectNode,
@@ -39,10 +33,7 @@ void main() async {
         path: '/',
         pageBuilder: (_, __) => const MaterialPage(child: InitialScreen()),
       ),
-      GoRoute(
-        path: '/test',
-        pageBuilder: (_, __) => const MaterialPage(child: TestScreen()),
-      ),
+
       GoRoute(
         path: '/settings',
         pageBuilder: (_, __) => const MaterialPage(child: SettingsScreen()),

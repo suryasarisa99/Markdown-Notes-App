@@ -1,8 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_highlighter/themes/atom-one-dark.dart';
-import 'package:markdown_notes/data/settings.dart';
 
 class MarkdownColors {
   final Color h1;

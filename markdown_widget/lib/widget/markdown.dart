@@ -120,13 +120,14 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
           physics: widget.physics,
           controller: controller,
           child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: _widgets.mapIndexed((i, widget) {
-            return wrapByAutoScroll(
-              _widgets.indexOf(widget),
-              wrapByVisibilityDetector(i, widget),
-              controller,
-            );
-          }).toList()),
+                return wrapByAutoScroll(
+                  _widgets.indexOf(widget),
+                  wrapByVisibilityDetector(i, widget),
+                  controller,
+                );
+              }).toList()),
         )
         // child: ListView.builder(
         //   shrinkWrap: widget.shrinkWrap,

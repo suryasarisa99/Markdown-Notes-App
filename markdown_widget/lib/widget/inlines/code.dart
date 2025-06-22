@@ -13,7 +13,7 @@ class CodeNode extends ElementNode {
   CodeNode(this.text, this.codeConfig);
 
   @override
-  InlineSpan build() => TextSpan(style: style, text: text);
+  InlineSpan build() => TextSpan(style: style, text: "  $text  ");
 
   @override
   TextStyle get style => codeConfig.style.merge(parentStyle);

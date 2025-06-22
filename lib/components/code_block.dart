@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_highlighter/flutter_highlighter.dart';
+import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:markdown_notes/constants.dart';
 
 class CodeBlock extends StatelessWidget {

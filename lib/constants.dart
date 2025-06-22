@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:flutter_highlighter/themes/atom-one-dark.dart';
-import 'package:flutter_highlighter/themes/atom-one-light.dart';
+import 'package:flutter_highlight/themes/atom-one-dark.dart';
+import 'package:flutter_highlight/themes/atom-one-light.dart';
 
 const macosFolderBookmark = "macos_folder_bookmark";
 const codeBlockDarkTheme = atomOneDarkTheme;
