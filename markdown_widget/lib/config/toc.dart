@@ -238,7 +238,7 @@ class _TocHeadingConfig extends HeadingConfig {
   @override
   final String tag;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
-  _TocHeadingConfig(this.style, this.tag, {this.key});
+  _TocHeadingConfig(this.style, this.tag, {this.onBuild});
 }

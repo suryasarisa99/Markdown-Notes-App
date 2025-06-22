@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:collection/collection.dart';
 
 class MarkdownWidget extends StatefulWidget {
   ///the markdown data
@@ -110,21 +111,33 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
   ///
   Widget buildMarkdownWidget() {
     final markdownWidget = NotificationListener<UserScrollNotification>(
-      onNotification: (notification) {
-        final ScrollDirection direction = notification.direction;
-        isForward = direction == ScrollDirection.forward;
-        return true;
-      },
-      child: ListView.builder(
-        shrinkWrap: widget.shrinkWrap,
-        physics: widget.physics,
-        controller: controller,
-        itemBuilder: (ctx, index) => wrapByAutoScroll(index,
-            wrapByVisibilityDetector(index, _widgets[index]), controller),
-        itemCount: _widgets.length,
-        padding: widget.padding,
-      ),
-    );
+        onNotification: (notification) {
+          final ScrollDirection direction = notification.direction;
+          isForward = direction == ScrollDirection.forward;
+          return true;
+        },
+        child: SingleChildScrollView(
+          physics: widget.physics,
+          controller: controller,
+          child: Column(
+              children: _widgets.mapIndexed((i, widget) {
+            return wrapByAutoScroll(
+              _widgets.indexOf(widget),
+              wrapByVisibilityDetector(i, widget),
+              controller,
+            );
+          }).toList()),
+        )
+        // child: ListView.builder(
+        //   shrinkWrap: widget.shrinkWrap,
+        //   physics: widget.physics,
+        //   controller: controller,
+        //   itemBuilder: (ctx, index) => wrapByAutoScroll(index,
+        //       wrapByVisibilityDetector(index, _widgets[index]), controller),
+        //   itemCount: _widgets.length,
+        //   padding: widget.padding,
+        // ),
+        );
     return widget.selectable
         ? SelectionArea(child: markdownWidget)
         : markdownWidget;

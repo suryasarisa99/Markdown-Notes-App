@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../config/configs.dart';
+import '../../inlines/code.dart';
 import '../../proxy_rich_text.dart';
 import '../../span_node.dart';
 import '../../widget_visitor.dart';
@@ -18,20 +21,27 @@ class HeadingNode extends ElementNode {
   @override
   InlineSpan build() {
     final divider = headingConfig.divider;
-    if (divider == null) return childrenSpan;
+    // if (divider == null) return childrenSpan;
+    final headingText = children.map((e) {
+      if (e is TextNode) return e.text;
+      if (e is CodeNode) return e.text;
+    }).join(" ");
+    final key = headingConfig.onBuild?.call(headingText);
+
     return WidgetSpan(
       child: Padding(
-        key: headingConfig.key,
         padding: headingConfig.padding,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
+          key: key,
           children: <Widget>[
             ProxyRichText(
               childrenSpan,
               richTextBuilder: visitor.richTextBuilder,
             ),
-            _Divider(divider: divider.copy(color: parentStyle?.color)),
+            if (divider != null)
+              _Divider(divider: divider.copy(color: parentStyle?.color)),
           ],
         ),
       ),
@@ -98,7 +108,7 @@ abstract class HeadingConfig implements LeafConfig {
   const HeadingConfig();
 
   TextStyle get style;
-  Key? get key;
+  Key? Function(String text)? get onBuild;
 
   HeadingDivider? get divider => null;
 
@@ -110,7 +120,7 @@ class H1Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
   const H1Config(
       {this.style = const TextStyle(
@@ -118,7 +128,7 @@ class H1Config extends HeadingConfig {
         height: 40 / 32,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override
@@ -141,7 +151,7 @@ class H2Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
   const H2Config(
       {this.style = const TextStyle(
@@ -149,7 +159,7 @@ class H2Config extends HeadingConfig {
         height: 30 / 24,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override
@@ -172,7 +182,7 @@ class H3Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
   const H3Config(
       {this.style = const TextStyle(
@@ -180,7 +190,7 @@ class H3Config extends HeadingConfig {
         height: 25 / 20,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override
@@ -203,7 +213,7 @@ class H4Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
   const H4Config(
       {this.style = const TextStyle(
@@ -211,7 +221,7 @@ class H4Config extends HeadingConfig {
         height: 20 / 16,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override
@@ -231,14 +241,14 @@ class H5Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
   const H5Config(
       {this.style = const TextStyle(
         fontSize: 16,
         height: 20 / 16,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override
@@ -258,7 +268,7 @@ class H6Config extends HeadingConfig {
   @override
   final TextStyle style;
   @override
-  final Key? key;
+  final Key? Function(String text)? onBuild;
 
   const H6Config(
       {this.style = const TextStyle(
@@ -266,7 +276,7 @@ class H6Config extends HeadingConfig {
         height: 20 / 16,
         fontWeight: FontWeight.bold,
       ),
-      this.key});
+      this.onBuild});
 
   @nonVirtual
   @override

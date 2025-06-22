@@ -26,6 +26,7 @@ class _TestScreenState extends State<TestScreen> {
   final Map<String, int> _renderedAnchorCounts = {};
   final focusNode = FocusNode();
   final mainFocusScope = FocusScopeNode();
+  final tocController = TocController();
 
   void _pickFile() {
     FilePicker.platform
@@ -55,16 +56,26 @@ class _TestScreenState extends State<TestScreen> {
       int count = (_anchorCounts[baseAnchor] ?? 0);
       String anchor = count == 0 ? baseAnchor : '$baseAnchor-$count';
       _anchorCounts[baseAnchor] = count + 1;
-      log("created anchor: $text => $anchor");
+      // log("created anchor: $text => $anchor");
       _anchorKeys[anchor] = GlobalKey();
     }
+  }
+
+  Key _addAnchorKey(String text) {
+    String baseAnchor = _normalizeAnchor(text);
+    int count = (_anchorCounts[baseAnchor] ?? 0);
+    String anchor = count == 0 ? baseAnchor : '$baseAnchor-$count';
+    _anchorCounts[baseAnchor] = count + 1;
+    log("created anchor: $text => $anchor");
+    _anchorKeys[anchor] = GlobalKey();
+    return _anchorKeys[anchor]!;
   }
 
   String _getAnchorForHeading(String text) {
     String baseAnchor = _normalizeAnchor(text);
     int count = (_renderedAnchorCounts[baseAnchor] ?? 0);
     String anchor = count == 0 ? baseAnchor : '$baseAnchor-$count';
-    log("get anchor: $text => $anchor");
+    // log("get anchor: $text => $anchor");
     _renderedAnchorCounts[baseAnchor] = count + 1;
     return anchor;
   }
@@ -85,25 +96,45 @@ class _TestScreenState extends State<TestScreen> {
 
   void _scrollToAnchor(String anchor) {
     final key = _anchorKeys[anchor];
-    if (key != null && key.currentContext != null) {
+    if (key != null) {
+      if (key.currentContext == null) {
+        log(
+          "Anchor key context is null for: $anchor, state: ${key.currentState}",
+        );
+        return;
+      }
       Scrollable.ensureVisible(
         key.currentContext!,
         // duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
+    } else {
+      log("Anchor not found: $anchor");
+      log("Available anchors: ${_anchorKeys.keys.join(', ')}");
     }
+  }
+
+  Key? onBuild(String text) {
+    return _addAnchorKey(text);
+    // final anchor = _getAnchorForHeading(text);
+    // final key = _anchorKeys[anchor];
+    // log("onBuild called for: $text, anchor: $anchor, key: $key");
+    // return key;
   }
 
   @override
   Widget build(BuildContext context) {
+    log("Only build once");
     final brightness = Theme.brightnessOf(context);
     final isDarkMode = brightness == Brightness.dark;
     final theme = AppTheme.from(brightness);
     final config = isDarkMode
         ? MarkdownConfig.darkConfig
         : MarkdownConfig.defaultConfig;
+    // clear keys and counts
+    _anchorKeys.clear();
+    _anchorCounts.clear();
     return Scaffold(
-      appBar: AppBar(title: const Text('Test Screen')),
       body: Column(
         children: [
           const Text('This is a test screen.'),
@@ -113,31 +144,45 @@ class _TestScreenState extends State<TestScreen> {
             },
             child: const Text('Go Back'),
           ),
+
           if (data.isNotEmpty)
             Expanded(
-              child: MarkdownWidget(
-                data: data,
-                config: config.copy(
-                  configs: [
-                    H1Config(
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: MarkdownWidget(
+                      data: data,
+                      tocController: tocController,
+                      config: config.copy(
+                        configs: [
+                          H1Config(onBuild: onBuild),
+                          H2Config(onBuild: onBuild),
+                          H3Config(onBuild: onBuild),
+                          H4Config(onBuild: onBuild),
+                          H5Config(onBuild: onBuild),
+                          H6Config(onBuild: onBuild),
+
+                          LinkConfig(
+                            onBuild: (link) {
+                              // log("Link built: $link");
+                              // _addAnchorKey(link);
+                            },
+                            onTap: (link) {
+                              log("Link tapped: $link");
+                              _scrollToAnchor(link.substring(1));
+                            },
+                            style: TextStyle(
+                              color: isDarkMode
+                                  ? Colors.blueAccent
+                                  : Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    LinkConfig(
-                      onBuild: (link) {
-                        log("Link built: $link");
-                      },
-                      onTap: (link) {
-                        log("Link tapped: $link");
-                      },
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.blueAccent : Colors.blue,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
         ],
