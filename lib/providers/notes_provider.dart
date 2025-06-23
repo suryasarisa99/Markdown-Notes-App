@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
 
 class NotesDirProvider extends Notifier<List<FileNode>> {
@@ -44,6 +45,7 @@ Future<List<FileNode>> readDirectoryTree(String rootPath) async {
   final List<FileSystemEntity> entities = await dir.list().toList();
   for (final entity in entities) {
     final name = entity.path.split('/').last;
+    if (!Settings.showHiddenFiles && name.startsWith(".")) continue;
     if (entity is Directory) {
       directories.add(
         FileNode(

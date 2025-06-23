@@ -57,14 +57,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  @override
-  void setState(VoidCallback fn) {
-    log("anchor keys cleared");
-    _anchorKeys.clear();
-    _anchorCounts.clear();
-    super.setState(fn);
-  }
-
   bool openPreviousOpenedFile() {
     final path = Settings.getLastFilePath(projectNode.path);
     if (path != null) {
@@ -372,7 +364,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               H1Config(
                 onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h1, fontSize: 28),
+                style: TextStyle(
+                  color: theme.markdownColors.h1,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               H2Config(
                 onBuild: onBuild,
@@ -380,11 +376,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               H3Config(
                 onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h3, fontSize: 22),
+                style: TextStyle(
+                  color: theme.markdownColors.h3,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               H4Config(
                 onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h4, fontSize: 20),
+                style: TextStyle(
+                  color: theme.markdownColors.h4,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               H5Config(
                 onBuild: onBuild,

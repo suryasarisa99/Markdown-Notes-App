@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_highlight/themes/a11y-dark.dart';
-import 'package:flutter_highlight/themes/a11y-light.dart';
+import 'package:flutter_highlight/themes/atom-one-light.dart';
 import 'package:highlight/highlight.dart' as hi;
 import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown/markdown.dart' as m;
@@ -157,7 +156,7 @@ class PreConfig implements LeafConfig {
     this.margin = const EdgeInsets.symmetric(vertical: 8.0),
     this.textStyle = const TextStyle(fontSize: 16),
     this.styleNotMatched,
-    this.theme = a11yLightTheme,
+    this.theme = atomOneLightTheme,
     this.language = 'dart',
     this.wrapper,
     this.builder,
@@ -168,7 +167,7 @@ class PreConfig implements LeafConfig {
           color: Color(0xff555555),
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
-        theme: a11yDarkTheme,
+        theme: atomOneLightTheme,
       );
 
   ///copy by other params

@@ -101,6 +101,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             setState(() {});
           }),
+          _buildSwitch('Show Hidden Files', Settings.showHiddenFiles, (value) {
+            Settings.showHiddenFiles = value;
+            setState(() {});
+          }),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
