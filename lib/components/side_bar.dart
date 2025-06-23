@@ -2,22 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/models/file_node.dart';
+import 'package:markdown_notes/theme.dart';
 
 class FileSidebar extends StatelessWidget {
-  final FileNode node;
+  final FileNode projectNode;
+  final FileNode? currentNode;
   final void Function(FileNode)? onFileTap;
   final void Function(FileNode)? onDirectoryChange;
   const FileSidebar({
     super.key,
-    required this.node,
+    required this.projectNode,
+    this.currentNode,
     required this.onDirectoryChange,
     this.onFileTap,
   });
 
+  List<String> getParts() {
+    String diff = currentNode?.path.replaceFirst(projectNode.path, "") ?? "";
+    diff = diff.startsWith("/") ? diff.substring(1) : diff;
+    return diff.split("/");
+  }
+
   @override
   Widget build(BuildContext context) {
+    final diffParts = getParts();
+    final brightness = Theme.brightnessOf(context);
+    final theme = AppTheme.from(brightness);
+
     return Drawer(
-      width: 350,
+      width: 300,
       // color: const Color.fromARGB(255, 19, 29, 44),
       child: Padding(
         padding: EdgeInsets.only(
@@ -44,14 +57,14 @@ class FileSidebar extends StatelessWidget {
                     },
                   );
                 },
-                child: Text(node.name),
+                child: Text(projectNode.name),
               ),
             ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(0.0),
-                children: node.children
-                    .map((node) => _buildNode(node))
+                children: projectNode.children
+                    .map((node) => _buildNode(node, diffParts, theme))
                     .toList(),
               ),
             ),
@@ -61,14 +74,24 @@ class FileSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildNode(FileNode node) {
+  Widget _buildNode(FileNode node, List<String> urlParts, AppColors theme) {
     if (node.isDirectory) {
+      final isDirectoryOpen =
+          urlParts.isNotEmpty &&
+          urlParts.first == node.name &&
+          urlParts.length > 1;
       return ExpansionTile(
         childrenPadding: EdgeInsets.only(left: 14),
         tilePadding: const EdgeInsets.only(right: 8),
         dense: true,
+        initiallyExpanded: isDirectoryOpen,
         showTrailingIcon: false,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.zero,
+          side: BorderSide.none,
+        ),
         title: ListTile(
+          visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
           contentPadding: const EdgeInsets.only(left: 4),
           dense: true,
           horizontalTitleGap: 2,
@@ -76,26 +99,9 @@ class FileSidebar extends StatelessWidget {
           title: Text(node.name),
           // onTap: onFileTap != null ? () => onFileTap!(node) : null,
         ),
-        children: node.children.map(_buildNode).toList(),
-        // children: [
-        //   IntrinsicHeight(
-        //     child: Row(
-        //       crossAxisAlignment: CrossAxisAlignment.stretch,
-        //       children: [
-        //         Container(
-        //           width: 1,
-        //           color: const Color.fromARGB(255, 82, 82, 82),
-        //         ),
-        //         SizedBox(width: 8),
-        //         Expanded(
-        //           child: Column(
-        //             children: node.children.map(_buildNode).toList(),
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ],
+        children: node.children
+            .map((part) => _buildNode(part, urlParts.sublist(1), theme))
+            .toList(),
       );
       // return Text(node.name);
     } else {
@@ -103,6 +109,11 @@ class FileSidebar extends StatelessWidget {
         contentPadding: const EdgeInsets.only(left: 4),
         // minVerticalPadding: 0,
         dense: true,
+        visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
+        selectedColor: theme.primary,
+        selectedTileColor: theme.surface2,
+        selected: currentNode?.path == node.path,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         horizontalTitleGap: 2,
         leading: const Icon(
           Icons.insert_drive_file,

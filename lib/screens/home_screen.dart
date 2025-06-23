@@ -225,7 +225,8 @@ class _HomeScreenState extends State<HomeScreen> {
             key: scaffoldKey,
             backgroundColor: conditionBg,
             drawer: FileSidebar(
-              node: projectNode,
+              projectNode: projectNode,
+              currentNode: curFileNode,
               onDirectoryChange: (node) {
                 context.pop();
                 setState(() {
