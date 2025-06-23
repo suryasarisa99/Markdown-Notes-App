@@ -238,14 +238,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 _handleNewPage(node, FileOpenType.fromSidebar);
               },
             ),
-            body: SafeArea(
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  _buildAppBar(conditionBg, theme),
-                  SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
-                ],
-              ),
+            body: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                _buildAppBar(conditionBg, theme),
+                SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
+              ],
             ),
           ),
         ),
@@ -293,11 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
       leading: IconButton(
-        icon: Icon(
-          HugeIcons.strokeRoundedSidebarLeft,
-          // color: const Color(0xFF8895B1),
-          color: theme.iconColor,
-        ),
+        icon: Icon(HugeIcons.strokeRoundedSidebarLeft, color: theme.iconColor),
         onPressed: _openDrawer,
       ),
       title: Text(curFileNode?.name ?? ""),
@@ -308,10 +302,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPage(bool isDarkMode, AppColors theme) {
     if (data.isEmpty) {
-      return Center(
-        child: Text(
-          "No content available. Please select a file.",
-          style: TextStyle(color: Colors.grey),
+      return SizedBox(
+        height:
+            MediaQuery.of(context).size.height -
+            kToolbarHeight -
+            MediaQuery.paddingOf(context).top,
+        child: Center(
+          child: Text(
+            "No content available. Please select a file.",
+            style: TextStyle(color: Colors.grey),
+          ),
         ),
       );
     }
@@ -331,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ? codeBlockDarkTheme
           : codeBlockLightTheme;
       return Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: MarkdownWidget(
           data: data,
           tocController: tocController,

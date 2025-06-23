@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,6 +42,14 @@ void main() async {
     ],
   );
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // <-- transparent status bar
+      statusBarIconBrightness:
+          Brightness.dark, // or Brightness.light for white icons
+      statusBarBrightness: Brightness.light, // for iOS
+    ),
+  );
   prefs = await SharedPreferences.getInstance();
   runApp(ProviderScope(child: MainApp(router: router)));
 }
