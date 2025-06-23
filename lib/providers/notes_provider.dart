@@ -25,7 +25,7 @@ class NotesDirProvider extends Notifier<List<FileNode>> {
     return nodes;
   }
 
-  Future<FileNode?> findNotesDir(String name) async {
+  FileNode? findNotesDir(String name) {
     return state.firstWhereOrNull((node) => node.name == name);
   }
 }

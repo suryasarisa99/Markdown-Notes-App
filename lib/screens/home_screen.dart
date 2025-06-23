@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:markdown_notes/components/code_block.dart';
@@ -12,6 +13,7 @@ import 'package:markdown_notes/components/side_bar.dart';
 import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/data/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
+import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:markdown_notes/utils/traverse.dart';
 import 'package:markdown_widget/markdown_widget.dart';
@@ -24,16 +26,16 @@ enum FileOpenType {
   const FileOpenType(this.name);
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   final FileNode projectNode;
   final FileNode? curFileNode;
   const HomeScreen({required this.projectNode, this.curFileNode, super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   String data = "";
   late FileNode projectNode = widget.projectNode;
   late FileNode? curFileNode = widget.curFileNode;
@@ -249,12 +251,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 _handleNewPage(node, FileOpenType.fromSidebar);
               },
             ),
-            body: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                _buildAppBar(conditionBg, theme),
-                SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
-              ],
+            body: RefreshIndicator(
+              onRefresh: () async {
+                final notesNotifier = ref.read(notesDirProvider.notifier);
+                await notesNotifier.updateNotesDir(Settings.location);
+                final x = notesNotifier.findNotesDir(projectNode.name);
+                setState(() {
+                  if (x != null) projectNode = x;
+                });
+              },
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  _buildAppBar(conditionBg, theme),
+                  SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
+                ],
+              ),
             ),
           ),
         ),

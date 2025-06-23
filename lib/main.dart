@@ -98,12 +98,12 @@ class MainApp extends ConsumerWidget {
             backgroundColor: WidgetStateProperty.all(AppTheme.light.surface),
           ),
         ),
-        // textTheme: GoogleFonts.plusJakartaSansTextTheme(
-        //   Theme.of(context).textTheme.apply(
-        //     bodyColor: Colors.black,
-        //     displayColor: Colors.black,
-        //   ),
-        // ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(
+          Theme.of(context).textTheme.apply(
+            bodyColor: Colors.black,
+            displayColor: Colors.black,
+          ),
+        ),
         iconTheme: IconThemeData(color: AppTheme.light.iconColor),
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(
@@ -137,12 +137,12 @@ class MainApp extends ConsumerWidget {
           ),
         ),
 
-        // textTheme: GoogleFonts.plusJakartaSansTextTheme(
-        //   Theme.of(context).textTheme.apply(
-        //     bodyColor: Colors.white,
-        //     displayColor: Colors.white,
-        //   ),
-        // ),
+        textTheme: GoogleFonts.plusJakartaSansTextTheme(
+          Theme.of(context).textTheme.apply(
+            bodyColor: Colors.white,
+            displayColor: Colors.white,
+          ),
+        ),
         iconTheme: IconThemeData(color: AppTheme.dark.iconColor),
         iconButtonTheme: IconButtonThemeData(
           style: IconButton.styleFrom(

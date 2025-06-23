@@ -106,9 +106,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     await notesDirNotifier.updateNotesDir(path);
     final selectedNotesName = prefs?.getString('selectedNotes');
     if (selectedNotesName != null) {
-      final selectedNode = await notesDirNotifier.findNotesDir(
-        selectedNotesName,
-      );
+      final selectedNode = notesDirNotifier.findNotesDir(selectedNotesName);
       if (selectedNode != null && mounted) {
         context.go(
           '/home',
