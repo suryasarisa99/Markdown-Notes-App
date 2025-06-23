@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
@@ -18,8 +20,12 @@ class FileSidebar extends StatelessWidget {
   });
 
   List<String> getParts() {
-    String diff = currentNode?.path.replaceFirst(projectNode.path, "") ?? "";
+    if (currentNode == null) return [];
+    log("currentNode: ${currentNode!.path}");
+    String diff = currentNode!.path.replaceFirst(projectNode.path, "");
+    log("diff: $diff");
     diff = diff.startsWith("/") ? diff.substring(1) : diff;
+    log("diff after removing first slash: $diff");
     return diff.split("/");
   }
 
@@ -74,9 +80,10 @@ class FileSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildNode(FileNode node, List<String> urlParts, AppColors theme) {
+  Widget _buildNode(FileNode node, List<String>? urlParts, AppColors theme) {
     if (node.isDirectory) {
       final isDirectoryOpen =
+          urlParts != null &&
           urlParts.isNotEmpty &&
           urlParts.first == node.name &&
           urlParts.length > 1;
@@ -100,7 +107,13 @@ class FileSidebar extends StatelessWidget {
           // onTap: onFileTap != null ? () => onFileTap!(node) : null,
         ),
         children: node.children
-            .map((part) => _buildNode(part, urlParts.sublist(1), theme))
+            .map(
+              (part) => _buildNode(
+                part,
+                (urlParts?.isNotEmpty ?? false) ? urlParts!.sublist(1) : null,
+                theme,
+              ),
+            )
             .toList(),
       );
       // return Text(node.name);

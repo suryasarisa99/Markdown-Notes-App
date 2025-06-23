@@ -11,7 +11,7 @@ FileNode? traverse(FileNode projectNode, FileNode? curFileNode, String url) {
   bool isAbsolutePath = path.startsWith("/");
 
   if (isAbsolutePath) {
-    return _traverseForward(projectNode, parts.sublist(1));
+    return traverseForward(projectNode, parts.sublist(1));
   }
   // Relative path handling
   /*
@@ -55,10 +55,10 @@ FileNode? traverse(FileNode projectNode, FileNode? curFileNode, String url) {
       diffPathParts.add(part);
     }
   }
-  return _traverseForward(projectNode, diffPathParts);
+  return traverseForward(projectNode, diffPathParts);
 }
 
-FileNode? _traverseForward(FileNode node, List<String> parts) {
+FileNode? traverseForward(FileNode node, List<String> parts) {
   for (final part in parts) {
     // Find the child with the matching name
     final child = node.children.firstWhere(
@@ -74,4 +74,13 @@ FileNode? _traverseForward(FileNode node, List<String> parts) {
       return child;
     }
   }
+}
+
+FileNode? traverseForwardFromProjectNode(FileNode node, String path) {
+  path = path.replaceFirst(node.path, "");
+  path = path.startsWith("/")
+      ? path.substring(1)
+      : path; // remove leading slash
+  final parts = path.split("/");
+  return traverseForward(node, parts);
 }

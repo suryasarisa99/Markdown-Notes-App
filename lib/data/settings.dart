@@ -28,4 +28,12 @@ class Settings {
   static set theme(String value) {
     prefs?.setString('theme', value);
   }
+
+  static String? getLastFilePath(String path) {
+    return prefs?.getString('lastFile_$path');
+  }
+
+  static setLastFilePath(String path, String filePath) {
+    prefs?.setString('lastFile_$path', filePath);
+  }
 }

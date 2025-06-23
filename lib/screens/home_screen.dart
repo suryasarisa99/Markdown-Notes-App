@@ -52,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
     log("TestScreen initialized with projectNode: ${projectNode.name}");
     if (curFileNode != null) {
       _handleData(curFileNode!);
+    } else {
+      openPreviousOpenedFile();
     }
   }
 
@@ -61,6 +63,19 @@ class _HomeScreenState extends State<HomeScreen> {
     _anchorKeys.clear();
     _anchorCounts.clear();
     super.setState(fn);
+  }
+
+  bool openPreviousOpenedFile() {
+    final path = Settings.getLastFilePath(projectNode.path);
+    if (path != null) {
+      final node = traverseForwardFromProjectNode(projectNode, path);
+      if (node != null) {
+        _handleData(node);
+        return true;
+      }
+      return false;
+    }
+    return false;
   }
 
   void _pickFile() {
@@ -125,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleData(FileNode node) async {
     final text = await File(node.path).readAsString();
+    Settings.setLastFilePath(projectNode.path, node.path);
     setState(() {
       data = text;
       isMarkdownFile =
@@ -232,7 +248,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   projectNode = node;
                 });
-                scaffoldKey.currentState!.openDrawer();
+                if (!openPreviousOpenedFile()) {
+                  scaffoldKey.currentState!.openDrawer();
+                }
               },
               onFileTap: (node) {
                 context.pop(); // Close the drawer

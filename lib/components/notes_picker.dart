@@ -77,102 +77,97 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
       shouldCloseOnMinExtent: widget.canClose,
       expand: false,
       builder: (context, controller) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
-              padding: const EdgeInsets.all(16.0),
-              height: 300,
-              color: theme.surface,
-              width: double.infinity,
-              child: Column(
-                children: [
-                  CallbackShortcuts(
-                    bindings: {
-                      LogicalKeySet(LogicalKeyboardKey.arrowDown): () {
-                        log('Arrow Down pressed');
-                        if (focusNode.hasFocus) {
-                          FocusScope.of(context).nextFocus();
-                        }
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          height: 300,
+          color: theme.surface,
+          width: double.infinity,
+          child: Column(
+            children: [
+              CallbackShortcuts(
+                bindings: {
+                  LogicalKeySet(LogicalKeyboardKey.arrowDown): () {
+                    log('Arrow Down pressed');
+                    if (focusNode.hasFocus) {
+                      FocusScope.of(context).nextFocus();
+                    }
+                  },
+                },
+                child: TextField(
+                  focusNode: focusNode,
+                  autofocus: widget.hasFocus,
+                  controller: widget.searchController,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12.0,
+                      vertical: 8.0,
+                    ),
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    log('Search query: $value');
+                  },
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: widget.searchController.text.isEmpty
+                      ? nodes.length
+                      : _filteredSidebarNodes.length,
+                  itemBuilder: (context, index) {
+                    final node = widget.searchController.text.isEmpty
+                        ? nodes[index]
+                        : _filteredSidebarNodes[index];
+                    return CallbackShortcuts(
+                      bindings: {
+                        LogicalKeySet(LogicalKeyboardKey.enter): () =>
+                            _onFileSelected(node),
                       },
-                    },
-                    child: TextField(
-                      focusNode: focusNode,
-                      autofocus: widget.hasFocus,
-                      controller: widget.searchController,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 8.0,
-                        ),
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
+                      child: Focus(
+                        child: Builder(
+                          builder: (context) {
+                            final hasFocus = Focus.of(context).hasFocus;
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: hasFocus
+                                    ? Border.all(
+                                        color: appTheme.colorScheme.primary,
+                                        width: 2,
+                                      )
+                                    : null,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: ListTile(
+                                minTileHeight: 40,
+                                // dense: true,
+                                minVerticalPadding: 0,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8.0,
+                                  vertical: 0,
+                                ),
+                                leading: Icon(
+                                  node.isDirectory
+                                      ? Icons.folder
+                                      : Icons.insert_drive_file,
+                                ),
+                                title: Text(node.name),
+                                onTap: () => _onFileSelected(node),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      onChanged: (value) {
-                        log('Search query: $value');
-                        setModalState(() {}); // Rebuild bottom sheet
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: controller,
-                      itemCount: widget.searchController.text.isEmpty
-                          ? nodes.length
-                          : _filteredSidebarNodes.length,
-                      itemBuilder: (context, index) {
-                        final node = widget.searchController.text.isEmpty
-                            ? nodes[index]
-                            : _filteredSidebarNodes[index];
-                        return CallbackShortcuts(
-                          bindings: {
-                            LogicalKeySet(LogicalKeyboardKey.enter): () =>
-                                _onFileSelected(node),
-                          },
-                          child: Focus(
-                            child: Builder(
-                              builder: (context) {
-                                final hasFocus = Focus.of(context).hasFocus;
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    border: hasFocus
-                                        ? Border.all(
-                                            color: appTheme.colorScheme.primary,
-                                            width: 2,
-                                          )
-                                        : null,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: ListTile(
-                                    minTileHeight: 40,
-                                    // dense: true,
-                                    minVerticalPadding: 0,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0,
-                                      vertical: 0,
-                                    ),
-                                    leading: Icon(
-                                      node.isDirectory
-                                          ? Icons.folder
-                                          : Icons.insert_drive_file,
-                                    ),
-                                    title: Text(node.name),
-                                    onTap: () => _onFileSelected(node),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
-            );
-          },
+            ],
+          ),
         );
       },
     );
