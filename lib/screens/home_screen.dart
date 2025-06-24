@@ -17,6 +17,7 @@ import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:markdown_notes/utils/traverse.dart';
 import 'package:markdown_widget/markdown_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 enum FileOpenType {
   fromSidebar("sidebar"),
@@ -433,9 +434,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // log("Link built: $link");
                   // _addAnchorKey(link);
                 },
-                onTap: (url) {
+                onTap: (url) async {
                   if (url.startsWith("http") || url.startsWith("www")) {
-                    // external link
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      log("Opening URL: $url");
+                      launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      log("Cannot launch URL: $url");
+                    }
                   } else if (url.startsWith('#')) {
                     // Current Page navigation
                     final anchor = url.substring(1);
