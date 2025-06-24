@@ -40,20 +40,32 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
   }
 
   @override
+  void didUpdateWidget(covariant NotesPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchController != widget.searchController) {
+      oldWidget.searchController.removeListener(_onSearchChanged);
+      widget.searchController.addListener(_onSearchChanged);
+    }
+  }
+
+  @override
   void dispose() {
     widget.searchController.removeListener(_onSearchChanged);
-    widget.searchController.dispose();
+    // widget.searchController.dispose();
     focusNode.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
     final query = widget.searchController.text.toLowerCase();
+    log('query: $query');
     setState(() {
       if (query.isNotEmpty) {
         _filteredSidebarNodes = _allSidebarNodes.where((node) {
           return node.name.toLowerCase().contains(query);
         }).toList();
+      } else {
+        _filteredSidebarNodes = _allSidebarNodes;
       }
     });
   }
@@ -108,21 +120,17 @@ class _NotesPickerState extends ConsumerState<NotesPicker> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  onChanged: (value) {
-                    log('Search query: $value');
-                  },
+                  // onChanged: (value) {
+                  //   log('Search query: $value');
+                  // },
                 ),
               ),
               Expanded(
                 child: ListView.builder(
                   controller: controller,
-                  itemCount: widget.searchController.text.isEmpty
-                      ? nodes.length
-                      : _filteredSidebarNodes.length,
+                  itemCount: _filteredSidebarNodes.length,
                   itemBuilder: (context, index) {
-                    final node = widget.searchController.text.isEmpty
-                        ? nodes[index]
-                        : _filteredSidebarNodes[index];
+                    final node = _filteredSidebarNodes[index];
                     return CallbackShortcuts(
                       bindings: {
                         LogicalKeySet(LogicalKeyboardKey.enter): () =>

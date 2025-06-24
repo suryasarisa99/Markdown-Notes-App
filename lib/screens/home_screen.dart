@@ -47,6 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final focusNode = FocusNode();
   final mainFocusScope = FocusScopeNode();
   final tocController = TocController();
+  final searchController = TextEditingController();
 
   @override
   void initState() {
@@ -171,7 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isScrollControlled: true,
       builder: (context) {
         return NotesPicker(
-          searchController: TextEditingController(),
+          searchController: searchController,
           hasFocus: true,
           onPick: (node) {
             context.pop();
