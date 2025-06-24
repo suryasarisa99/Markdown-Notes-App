@@ -26,8 +26,8 @@ class NotesPicker extends ConsumerStatefulWidget {
 }
 
 class _NotesPickerState extends ConsumerState<NotesPicker> {
-  List<FileNode> _filteredSidebarNodes = [];
   late List<FileNode> _allSidebarNodes = ref.read(notesDirProvider);
+  late List<FileNode> _filteredSidebarNodes = _allSidebarNodes;
   FocusNode focusNode = FocusNode();
 
   @override

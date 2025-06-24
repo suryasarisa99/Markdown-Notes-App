@@ -168,7 +168,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Permission to Access Notes'),
+          title: const Text('Notes Access'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -211,11 +211,12 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       return NotesPicker(
         searchController: _searchController,
         canClose: false,
+        hasFocus: true,
         onPick: (node) {
           context.go('/home', extra: (projectNode: node, curFileNode: null));
         },
       );
-    });
+    }, enableDrag: false);
   }
 
   @override
