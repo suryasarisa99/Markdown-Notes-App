@@ -126,6 +126,7 @@ class FileSidebar extends StatelessWidget {
         selectedColor: theme.primary,
         selectedTileColor: theme.surface2,
         selected: currentNode?.path == node.path,
+        autofocus: currentNode?.path == node.path,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         horizontalTitleGap: 2,
         leading: const Icon(

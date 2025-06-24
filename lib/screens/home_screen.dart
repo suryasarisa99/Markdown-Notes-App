@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:markdown_notes/components/code_block.dart';
+import 'package:markdown_notes/components/markdown_view.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/components/side_bar.dart';
 import 'package:markdown_notes/constants.dart';
@@ -186,6 +187,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void onLinkTap(url) async {
+    if (url.startsWith("http") || url.startsWith("www")) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        log("Opening URL: $url");
+        launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        log("Cannot launch URL: $url");
+      }
+    } else if (url.startsWith('#')) {
+      // Current Page navigation
+      final anchor = url.substring(1);
+      //     .toLowerCase()
+      //     .replaceAll(RegExp(r'[^a-z0-9\s-]'), '')
+      //     .replaceAll(RegExp(r'\s+'), '-');
+      // log("anchor: $anchor");
+      log("scrolling to anchor: $url");
+      _scrollToAnchor(anchor);
+    } else {
+      // Another notes page
+      final newPageNode = traverse(projectNode, curFileNode, url);
+      if (newPageNode != null) {
+        _handleNewPage(newPageNode, FileOpenType.fromLink);
+      } else {
+        log("Node not found for URL: $url");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     log("Only build once");
@@ -348,128 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isFullSize: true,
       );
     } else {
-      final config = isDarkMode
-          ? MarkdownConfig.darkConfig
-          : MarkdownConfig.defaultConfig;
-      final preConfig = isDarkMode ? PreConfig.darkConfig : PreConfig();
-      final codeBlockTheme = isDarkMode
-          ? codeBlockDarkTheme
-          : codeBlockLightTheme;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: MarkdownWidget(
-          data: data,
-          tocController: tocController,
-          config: config.copy(
-            configs: [
-              preConfig.copy(
-                decoration: BoxDecoration(
-                  color: codeBlockTheme['root']?.backgroundColor,
-                  borderRadius: BorderRadius.circular(6.0),
-                ),
-                theme: codeBlockTheme,
-              ),
-              TableConfig(
-                border: TableBorder.all(
-                  color: Colors.red,
-                  width: 1.0,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                headerRowDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: codeBlockTheme['tableHeader']?.backgroundColor,
-                ),
-                wrapper: (table) => SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: table,
-                ),
-              ),
-              H1Config(
-                onBuild: onBuild,
-                style: TextStyle(
-                  color: theme.markdownColors.h1,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              H2Config(
-                onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h2, fontSize: 25),
-              ),
-              H3Config(
-                onBuild: onBuild,
-                style: TextStyle(
-                  color: theme.markdownColors.h3,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              H4Config(
-                onBuild: onBuild,
-                style: TextStyle(
-                  color: theme.markdownColors.h4,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              H5Config(
-                onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h5, fontSize: 18),
-              ),
-              H6Config(
-                onBuild: onBuild,
-                style: TextStyle(color: theme.markdownColors.h6, fontSize: 16),
-              ),
-              ListConfig(marginLeft: 24),
-              ListConfig(),
-              BlockquoteConfig(padding: EdgeInsets.symmetric(horizontal: 30)),
-              CodeConfig(
-                style: TextStyle(
-                  backgroundColor: theme.markdownColors.inlineCodeBg,
-                  color: theme.markdownColors.inlineCodeTxt,
-                ),
-              ),
-              LinkConfig(
-                onBuild: (link) {
-                  // log("Link built: $link");
-                  // _addAnchorKey(link);
-                },
-                onTap: (url) async {
-                  if (url.startsWith("http") || url.startsWith("www")) {
-                    final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      log("Opening URL: $url");
-                      launchUrl(uri, mode: LaunchMode.externalApplication);
-                    } else {
-                      log("Cannot launch URL: $url");
-                    }
-                  } else if (url.startsWith('#')) {
-                    // Current Page navigation
-                    final anchor = url.substring(1);
-                    //     .toLowerCase()
-                    //     .replaceAll(RegExp(r'[^a-z0-9\s-]'), '')
-                    //     .replaceAll(RegExp(r'\s+'), '-');
-                    // log("anchor: $anchor");
-                    log("scrolling to anchor: $url");
-                    _scrollToAnchor(anchor);
-                  } else {
-                    // Another notes page
-                    final newPageNode = traverse(projectNode, curFileNode, url);
-                    if (newPageNode != null) {
-                      _handleNewPage(newPageNode, FileOpenType.fromLink);
-                    } else {
-                      log("Node not found for URL: $url");
-                    }
-                  }
-                },
-                style: TextStyle(
-                  color: isDarkMode ? Colors.blueAccent : Colors.blue,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      return MarkdownView(data: data, onBuild: onBuild, onLinkTap: onLinkTap);
     }
   }
 }

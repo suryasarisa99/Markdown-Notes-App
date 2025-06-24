@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
@@ -70,7 +69,6 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    // final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
