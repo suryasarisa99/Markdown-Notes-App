@@ -12,7 +12,7 @@ import 'package:markdown_notes/components/markdown_view.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/components/side_bar.dart';
 import 'package:markdown_notes/constants.dart';
-import 'package:markdown_notes/data/settings.dart';
+import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/theme.dart';

@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:markdown_notes/data/settings.dart';
+import 'package:markdown_notes/settings/markdown_settings.dart';
+import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:markdown_notes/utils/macos_file_picker.dart';
@@ -18,9 +20,16 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final TextEditingController _pathController = TextEditingController();
+  final TextEditingController _pathController = TextEditingController(
+    text: Settings.location.isEmpty ? "Not set" : Settings.location,
+  );
   final _themeController = TextEditingController(text: Settings.theme);
-
+  final _codeBlockFontSizeController = TextEditingController(
+    text: MdSettings.codeBlockFontSize.toString(),
+  );
+  final _programFileFontSizeController = TextEditingController(
+    text: MdSettings.codePageFontSize.toString(),
+  );
   Widget _buildSwitch(String title, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       activeColor: Theme.of(context).colorScheme.primary,
@@ -30,10 +39,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Widget _buildNumberInput(
+    String title,
+    TextEditingController controller,
+    bool Function() onSave,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const Spacer(),
+          SizedBox(
+            width: 80,
+            child: TextButton(
+              onPressed: () {
+                showPopupTextField(context, title, controller, onSave);
+              },
+              child: Text(controller.text),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void showPopupTextField(
     BuildContext context,
     String title,
     TextEditingController controller,
+    bool Function() onSave,
   ) {
     showDialog(
       context: context,
@@ -41,9 +76,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           title: Text(title),
           content: TextField(
+            autofocus: true,
             controller: controller,
+            textAlign: TextAlign.center,
             decoration: const InputDecoration(
-              hintText: "Enter path",
+              hintText: "Type here...",
               isDense: true,
             ),
           ),
@@ -56,9 +93,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                Settings.location = controller.text;
-                Navigator.of(context).pop();
-                setState(() {});
+                if (onSave()) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text("Save"),
             ),
@@ -178,7 +215,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     showPopupTextField(
                       context,
                       "Set Android Directory",
-                      _pathController..text = Settings.location,
+                      _pathController,
+                      () {
+                        Settings.location = _pathController.text;
+                        Navigator.of(context).pop();
+                        setState(() {});
+                        return true;
+                      },
                     );
                   },
                   child: Text(
@@ -212,6 +255,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
+          _buildNumberInput(
+            'Code Block Font Size',
+            _codeBlockFontSizeController,
+            () {
+              double? parseValue = double.tryParse(
+                _codeBlockFontSizeController.text,
+              );
+              if (parseValue != null && parseValue > 0 && parseValue <= 32) {
+                MdSettings.codePageFontSize = parseValue;
+                setState(() {});
+                return true;
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Invalid font size")),
+                );
+                return false;
+              }
+            },
+          ),
+          _buildNumberInput(
+            'Program File Font Size',
+            _programFileFontSizeController,
+            () {
+              double? parseValue = double.tryParse(
+                _programFileFontSizeController.text,
+              );
+              if (parseValue != null && parseValue > 0 && parseValue <= 32) {
+                MdSettings.codePageFontSize = parseValue;
+                setState(() {});
+                return true;
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Invalid font size")),
+                );
+                return false;
+              }
+            },
+          ),
+          // _buildSwitch('Code Block Font Size', (value) {
+          //   Settings.sidebarFileHistory = value;
+          //   setState(() {});
+          // }),
         ],
       ),
     );

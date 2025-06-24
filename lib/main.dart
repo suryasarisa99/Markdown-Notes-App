@@ -7,7 +7,7 @@ import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
 import 'package:markdown_notes/screens/initial_screen.dart';
-import 'package:markdown_notes/screens/settings_screen.dart';
+import 'package:markdown_notes/settings/settings_screen.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

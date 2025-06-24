@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:macos_secure_bookmarks/macos_secure_bookmarks.dart';
 import 'package:markdown_notes/constants.dart';
-import 'package:markdown_notes/data/settings.dart';
+import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/main.dart';
 
 Future<String?> pickMacosFolderBookmark() async {

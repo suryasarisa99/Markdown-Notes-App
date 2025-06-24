@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:markdown_notes/components/notes_picker.dart';
 import 'package:markdown_notes/constants.dart';
-import 'package:markdown_notes/data/settings.dart';
+import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/main.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/utils/macos_file_picker.dart';

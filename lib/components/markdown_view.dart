@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:markdown_notes/constants.dart';
+import 'package:markdown_notes/settings/markdown_settings.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:markdown_widget/config/configs.dart';
 import 'package:markdown_widget/markdown_widget.dart';
@@ -48,6 +49,7 @@ class MarkdownView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6.0),
               ),
               theme: codeBlockTheme,
+              textStyle: TextStyle(fontSize: MdSettings.codeBlockFontSize),
             ),
             HrConfig(
               color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade400,

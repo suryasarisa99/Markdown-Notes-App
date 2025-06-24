@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:markdown_notes/constants.dart';
+import 'package:markdown_notes/settings/markdown_settings.dart';
 
 class CodeBlock extends StatelessWidget {
   final String codeContent;
@@ -42,7 +43,10 @@ class CodeBlock extends StatelessWidget {
           codeContent,
           language: language,
           theme: theme,
-          textStyle: const TextStyle(fontSize: 14.0, height: 1.3),
+          textStyle: TextStyle(
+            fontSize: MdSettings.codePageFontSize,
+            height: 1.3,
+          ),
         ),
       ),
     );
