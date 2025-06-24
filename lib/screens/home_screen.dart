@@ -216,6 +216,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> onRefresh() async {
+    final notesNotifier = ref.read(notesDirProvider.notifier);
+    await notesNotifier.updateNotesDir(Settings.location);
+    final x = notesNotifier.findNotesDir(projectNode.name);
+    setState(() {
+      if (x != null) projectNode = x;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     log("Only build once");
@@ -284,14 +293,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
             body: RefreshIndicator(
-              onRefresh: () async {
-                final notesNotifier = ref.read(notesDirProvider.notifier);
-                await notesNotifier.updateNotesDir(Settings.location);
-                final x = notesNotifier.findNotesDir(projectNode.name);
-                setState(() {
-                  if (x != null) projectNode = x;
-                });
-              },
+              onRefresh: onRefresh,
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
@@ -323,6 +325,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   height: 40,
                   onTap: () => context.push("/settings"),
                   child: Text('Settings'),
+                ),
+                PopupMenuItem(
+                  height: 40,
+                  onTap: onRefresh,
+                  child: Text('Refresh'),
                 ),
                 PopupMenuItem(
                   height: 40,
