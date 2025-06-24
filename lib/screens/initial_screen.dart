@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,12 +47,46 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     }
   }
 
+  Future<String?> _pickNotesDirectory() async {
+    return await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Notes Directory'),
+          content: const Text(
+            'Please select the directory where your notes are stored.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // returns null
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final selectedDir = await FilePicker.platform
+                    .getDirectoryPath();
+                if (selectedDir != null && selectedDir.isNotEmpty) {
+                  Settings.location = selectedDir;
+                  GoRouter.of(context).pop(selectedDir);
+                }
+              },
+              child: const Text('Select Directory'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<String?> _requestAllFilesAccessAndReadNotes() async {
     if (Platform.isAndroid) {
       PermissionStatus status = await Permission.manageExternalStorage
           .request();
       if (status.isGranted) {
-        return Settings.location;
+        final location = Settings.location;
+        return location.isNotEmpty ? location : await _pickNotesDirectory();
       } else if (status.isDenied) {
         return null;
       } else if (status.isPermanentlyDenied) {
@@ -129,6 +164,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
 
   void _showPopup() {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -137,8 +173,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'To access your notes, we need permission to read files on your device. '
-                'Please select the directory where your notes are stored.',
+                'To access your notes, we need permission to read files on your device. ',
               ),
               const SizedBox(height: 16),
             ],
@@ -146,17 +181,19 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                // close app
+                log("User cancelled the permission request.");
+                exit(0);
               },
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
+                GoRouter.of(context).pop();
                 _requestAllFilesAccessAndReadNotes().then((path) {
                   log("got permission for path: $path");
                   if (path != null) {
                     prefs?.setBool("isNotFirstTime", true);
-                    context.pop();
                     _loadNotesDirectories(path);
                   }
                 });
@@ -186,15 +223,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     return Scaffold(
       key: scaffoldKey,
       body: Column(
-        children: [
-          Expanded(child: Center(child: CircularProgressIndicator())),
-          TextButton(
-            onPressed: () {
-              _showBottomSheet();
-            },
-            child: const Text('Select Notes Directory'),
-          ),
-        ],
+        children: [Expanded(child: Center(child: CircularProgressIndicator()))],
       ),
     );
   }

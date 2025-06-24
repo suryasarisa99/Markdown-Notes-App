@@ -89,7 +89,13 @@ class MainApp extends ConsumerWidget {
           ),
         ),
         drawerTheme: DrawerThemeData(backgroundColor: AppTheme.light.surface),
-        dialogTheme: DialogThemeData(backgroundColor: AppTheme.light.surface),
+        dialogTheme: DialogThemeData(
+          backgroundColor: AppTheme.light.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          actionsPadding: const EdgeInsets.only(right: 18.0, bottom: 20.0),
+        ),
         canvasColor: AppTheme.light.surface,
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
@@ -127,7 +133,13 @@ class MainApp extends ConsumerWidget {
           ),
         ),
         drawerTheme: DrawerThemeData(backgroundColor: AppTheme.dark.surface),
-        dialogTheme: DialogThemeData(backgroundColor: AppTheme.dark.surface),
+        dialogTheme: DialogThemeData(
+          backgroundColor: AppTheme.dark.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          actionsPadding: const EdgeInsets.only(right: 18.0, bottom: 20.0),
+        ),
         canvasColor: AppTheme.dark.surface,
         dropdownMenuTheme: DropdownMenuThemeData(
           menuStyle: MenuStyle(
