@@ -366,14 +366,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: codeBlockTheme['root']?.backgroundColor,
                   borderRadius: BorderRadius.circular(6.0),
                 ),
-                // wrapper: (child, text, lang) {
-                //   return Padding(
-                //     padding: const EdgeInsets.all(12.0),
-                //     child: child,
-                //   );
-                // },
                 theme: codeBlockTheme,
-                // theme: a11yDarkTheme,
+              ),
+              TableConfig(
+                border: TableBorder.all(
+                  color: Colors.red,
+                  width: 1.0,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                headerRowDecoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: codeBlockTheme['tableHeader']?.backgroundColor,
+                ),
+                wrapper: (table) => SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: table,
+                ),
               ),
               H1Config(
                 onBuild: onBuild,
