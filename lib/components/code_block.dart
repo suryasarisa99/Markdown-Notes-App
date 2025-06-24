@@ -42,11 +42,7 @@ class CodeBlock extends StatelessWidget {
           codeContent,
           language: language,
           theme: theme,
-          textStyle: const TextStyle(
-            fontFamily: 'JetBrainsMonoNL',
-            fontSize: 14.0,
-            height: 1.3,
-          ),
+          textStyle: const TextStyle(fontSize: 14.0, height: 1.3),
         ),
       ),
     );
