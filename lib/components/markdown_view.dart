@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:markdown_widget/config/configs.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 import 'package:markdown_widget/widget/blocks/container/blockquote.dart';
 import 'package:markdown_widget/widget/blocks/container/list.dart';
 import 'package:markdown_widget/widget/blocks/container/table.dart';
@@ -12,7 +11,6 @@ import 'package:markdown_widget/widget/blocks/leaf/heading.dart';
 import 'package:markdown_widget/widget/blocks/leaf/link.dart';
 import 'package:markdown_widget/widget/inlines/code.dart';
 import 'package:markdown_widget/widget/markdown.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MarkdownView extends StatelessWidget {
   final String data;
@@ -51,9 +49,12 @@ class MarkdownView extends StatelessWidget {
               ),
               theme: codeBlockTheme,
             ),
+            HrConfig(
+              color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade400,
+            ),
             TableConfig(
               border: TableBorder.all(
-                color: Colors.red,
+                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400,
                 width: 1.0,
                 borderRadius: BorderRadius.circular(6),
               ),
