@@ -3,15 +3,23 @@ import 'dart:io';
 
 import 'package:markdown_notes/models/file_node.dart';
 
-FileNode? traverse(FileNode projectNode, FileNode? curFileNode, String url) {
+({FileNode? node, String? anchor}) traverse(
+  FileNode projectNode,
+  FileNode? curFileNode,
+  String url,
+) {
   // Traverse the projectNode tree to find the fileNode with the given path
   final pathAndAnchor = url.split('#');
   final path = pathAndAnchor[0];
+  final anchor = pathAndAnchor.length > 1 ? pathAndAnchor[1] : null;
   final parts = path.split("/");
   bool isAbsolutePath = path.startsWith("/");
 
   if (isAbsolutePath) {
-    return _traverseForward(projectNode, parts.sublist(1));
+    return (
+      node: _traverseForward(projectNode, parts.sublist(1)),
+      anchor: anchor,
+    );
   }
   // Relative path handling
   /*
@@ -55,7 +63,7 @@ FileNode? traverse(FileNode projectNode, FileNode? curFileNode, String url) {
       diffPathParts.add(part);
     }
   }
-  return _traverseForward(projectNode, diffPathParts);
+  return (node: _traverseForward(projectNode, diffPathParts), anchor: anchor);
 }
 
 FileNode? _traverseForward(FileNode node, List<String> parts) {

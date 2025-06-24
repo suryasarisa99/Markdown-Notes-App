@@ -145,7 +145,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       if (selectedNode != null && mounted) {
         context.go(
           '/home',
-          extra: (projectNode: selectedNode, curFileNode: null),
+          extra: (projectNode: selectedNode, curFileNode: null, anchor: null),
         );
       }
     } else {
@@ -213,7 +213,10 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
         canClose: false,
         hasFocus: true,
         onPick: (node) {
-          context.go('/home', extra: (projectNode: node, curFileNode: null));
+          context.go(
+            '/home',
+            extra: (projectNode: node, curFileNode: null, anchor: null),
+          );
         },
       );
     }, enableDrag: false);

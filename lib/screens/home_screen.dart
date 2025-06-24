@@ -31,7 +31,13 @@ enum FileOpenType {
 class HomeScreen extends ConsumerStatefulWidget {
   final FileNode projectNode;
   final FileNode? curFileNode;
-  const HomeScreen({required this.projectNode, this.curFileNode, super.key});
+  final String? anchor;
+  const HomeScreen({
+    required this.projectNode,
+    this.curFileNode,
+    this.anchor,
+    super.key,
+  });
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -54,7 +60,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    log("TestScreen initialized with projectNode: ${projectNode.name}");
+    if (widget.anchor != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(
+          const Duration(milliseconds: 150),
+          () => _scrollToAnchor(widget.anchor!),
+        );
+      });
+    }
     if (curFileNode != null) {
       _handleData(curFileNode!);
     } else {
@@ -120,18 +133,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void _handleNewPage(FileNode node, FileOpenType openType) {
+  void _handleNewPage(FileNode node, FileOpenType openType, {String? anchor}) {
     final openInNewTab = openType == FileOpenType.fromLink
         ? Settings.linkFileHistory
         : Settings.sidebarFileHistory;
+    log("new page: newTab: $openInNewTab, anchor: $anchor");
     if (openInNewTab) {
       context.push(
         '/home',
-        extra: (projectNode: projectNode, curFileNode: node),
+        extra: (projectNode: projectNode, curFileNode: node, anchor: anchor),
       );
     } else {
       _handleData(node);
-      _scrollController.jumpTo(0);
+      if (anchor != null) {
+        Future.delayed(
+          const Duration(milliseconds: 200),
+          () => _scrollToAnchor(anchor),
+        );
+      } else {
+        _scrollController.jumpTo(0);
+      }
     }
   }
 
@@ -207,9 +228,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _scrollToAnchor(anchor);
     } else {
       // Another notes page
-      final newPageNode = traverse(projectNode, curFileNode, url);
-      if (newPageNode != null) {
-        _handleNewPage(newPageNode, FileOpenType.fromLink);
+      final traverseData = traverse(projectNode, curFileNode, url);
+      if (traverseData.node != null) {
+        _handleNewPage(
+          traverseData.node!,
+          FileOpenType.fromLink,
+          anchor: traverseData.anchor,
+        );
       } else {
         log("Node not found for URL: $url");
       }

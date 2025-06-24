@@ -20,11 +20,17 @@ void main() async {
         path: '/home',
         pageBuilder: (context, state) {
           final data =
-              state.extra as ({FileNode projectNode, FileNode? curFileNode});
+              state.extra
+                  as ({
+                    FileNode projectNode,
+                    FileNode? curFileNode,
+                    String? anchor,
+                  });
           return MaterialPage(
             child: HomeScreen(
               projectNode: data.projectNode,
               curFileNode: data.curFileNode,
+              anchor: data.anchor,
             ),
           );
         },
