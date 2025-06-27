@@ -37,15 +37,22 @@ class CodeBlock extends StatelessWidget {
               ]
             : null,
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: HighlightView(
-          codeContent,
-          language: language,
-          theme: theme,
-          textStyle: TextStyle(
-            fontSize: MdSettings.codePageFontSize,
-            height: 1.3,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
+          overscroll: !isFullSize,
+          physics: const ClampingScrollPhysics(),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: HighlightView(
+            codeContent,
+            language: language,
+            theme: theme,
+            textStyle: TextStyle(
+              fontSize: MdSettings.codePageFontSize,
+              height: 1.3,
+            ),
           ),
         ),
       ),
