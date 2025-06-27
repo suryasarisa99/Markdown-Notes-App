@@ -16,9 +16,8 @@ import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/theme.dart';
+import 'package:markdown_notes/utils/anchor_service.dart';
 import 'package:markdown_notes/utils/traverse.dart';
-import 'package:markdown_widget/markdown_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 enum FileOpenType {
   fromSidebar("sidebar"),
@@ -48,28 +47,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late FileNode projectNode = widget.projectNode;
   late FileNode? curFileNode = widget.curFileNode;
   bool isMarkdownFile = true;
+  late String? preAnchor = widget.anchor;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
-  final Map<String, GlobalKey> _anchorKeys = {};
-  final Map<String, int> _anchorCounts = {};
+
   final focusNode = FocusNode();
   final mainFocusScope = FocusScopeNode();
-  final tocController = TocController();
   final searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    if (widget.anchor != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(
-          const Duration(milliseconds: 150),
-          () => _scrollToAnchor(widget.anchor!),
-        );
-      });
-    }
     if (curFileNode != null) {
-      _handleData(curFileNode!);
+      _handleData(curFileNode!, preAnchor);
     } else {
       openPreviousOpenedFile();
     }
@@ -102,37 +92,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         });
   }
 
-  Key _addAnchorKey(String text) {
-    String baseAnchor = _normalizeAnchor(text);
-    int count = (_anchorCounts[baseAnchor] ?? 0);
-    String anchor = count == 0 ? baseAnchor : '$baseAnchor-$count';
-    _anchorCounts[baseAnchor] = count + 1;
-    log("created anchor: $text => $anchor");
-    _anchorKeys[anchor] = GlobalKey();
-    return _anchorKeys[anchor]!;
-  }
-
-  // heading text to anchor(link) conversion.
-  String _normalizeAnchor(String text) {
-    // VS Code style: lowercase, remove special chars, replace spaces with dashes
-    String anchor = text
-        .trim()
-        .toLowerCase()
-        .replaceAll('<code>', '')
-        .replaceAll('</code>', '');
-    anchor = anchor.replaceAll(RegExp(r'[^a-z0-9\s-]'), '');
-    anchor = anchor.replaceAll(RegExp(r'\s+'), '-');
-    // log("normalized anchor: $text => $anchor");
-    return anchor;
-  }
-
-  void _scrollToAnchor(String anchor) {
-    final key = _anchorKeys[anchor];
-    if (key != null && key.currentContext != null) {
-      Scrollable.ensureVisible(key.currentContext!, curve: Curves.easeInOut);
-    }
-  }
-
   void _handleNewPage(FileNode node, FileOpenType openType, {String? anchor}) {
     final openInNewTab = openType == FileOpenType.fromLink
         ? Settings.linkFileHistory
@@ -144,19 +103,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         extra: (projectNode: projectNode, curFileNode: node, anchor: anchor),
       );
     } else {
-      _handleData(node);
-      if (anchor != null) {
-        Future.delayed(
-          const Duration(milliseconds: 200),
-          () => _scrollToAnchor(anchor),
-        );
-      } else {
-        _scrollController.jumpTo(0);
-      }
+      _handleData(node, anchor);
     }
   }
 
-  void _handleData(FileNode node) async {
+  void _handleData(FileNode node, [String? anchor]) async {
     final text = await File(node.path).readAsString();
     Settings.setLastFilePath(projectNode.path, node.path);
     setState(() {
@@ -164,11 +115,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isMarkdownFile =
           node.name.endsWith(".md") || node.name.endsWith(".markdown");
       curFileNode = node;
+      preAnchor = anchor;
     });
-  }
-
-  Key? onBuild(String text) {
-    return _addAnchorKey(text);
   }
 
   void _goBack() {
@@ -209,35 +157,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void onLinkTap(url) async {
-    if (url.startsWith("http") || url.startsWith("www")) {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        log("Opening URL: $url");
-        launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        log("Cannot launch URL: $url");
-      }
-    } else if (url.startsWith('#')) {
-      // Current Page navigation
-      final anchor = url.substring(1);
-      //     .toLowerCase()
-      //     .replaceAll(RegExp(r'[^a-z0-9\s-]'), '')
-      //     .replaceAll(RegExp(r'\s+'), '-');
-      // log("anchor: $anchor");
-      log("scrolling to anchor: $url");
-      _scrollToAnchor(anchor);
+    // Another to another notes page
+    log("url: $url");
+    final traverseData = traverse(projectNode, curFileNode, url);
+    if (traverseData.node != null) {
+      _handleNewPage(
+        traverseData.node!,
+        FileOpenType.fromLink,
+        anchor: traverseData.anchor,
+      );
     } else {
-      // Another notes page
-      final traverseData = traverse(projectNode, curFileNode, url);
-      if (traverseData.node != null) {
-        _handleNewPage(
-          traverseData.node!,
-          FileOpenType.fromLink,
-          anchor: traverseData.anchor,
-        );
-      } else {
-        log("Node not found for URL: $url");
-      }
+      log("Node not found for URL: $url");
     }
   }
 
@@ -252,7 +182,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log("Only build once");
     final brightness = Theme.brightnessOf(context);
     final isDarkMode = brightness == Brightness.dark;
     final theme = AppTheme.from(brightness);
@@ -262,9 +191,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final conditionBg = isMarkdownFile
         ? theme.background
         : codeBlockTheme['root']!.backgroundColor!;
-    // clear keys and counts
-    _anchorKeys.clear();
-    _anchorCounts.clear();
+
     return FocusScope(
       autofocus: true,
       node: mainFocusScope,
@@ -319,12 +246,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             body: RefreshIndicator(
               onRefresh: onRefresh,
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  _buildAppBar(conditionBg, theme),
-                  SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
-                ],
+              child: SafeArea(
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    _buildAppBar(conditionBg, theme),
+                    SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -410,7 +339,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isFullSize: true,
       );
     } else {
-      return MarkdownView(data: data, onBuild: onBuild, onLinkTap: onLinkTap);
+      return MarkdownView(
+        data: data,
+        onLinkTap: onLinkTap,
+        preAnchor: preAnchor,
+      );
     }
   }
 }
