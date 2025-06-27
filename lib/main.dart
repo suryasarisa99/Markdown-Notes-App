@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,25 +11,30 @@ import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
 import 'package:markdown_notes/screens/initial_screen.dart';
+import 'package:markdown_notes/screens/test_screen.dart';
 import 'package:markdown_notes/settings/settings_screen.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uri_content/uri_content.dart';
+
+typedef HomeProps = ({
+  FileNode projectNode,
+  FileNode? curFileNode,
+  String? anchor,
+});
 
 SharedPreferences? prefs;
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   final router = GoRouter(
     initialLocation: '/',
+    navigatorKey: _rootNavigatorKey,
     routes: [
       GoRoute(
         path: '/home',
         pageBuilder: (context, state) {
-          final data =
-              state.extra
-                  as ({
-                    FileNode projectNode,
-                    FileNode? curFileNode,
-                    String? anchor,
-                  });
+          final data = state.extra as HomeProps;
           return MaterialPage(
             child: HomeScreen(
               projectNode: data.projectNode,
@@ -44,15 +53,24 @@ void main() async {
         path: '/settings',
         pageBuilder: (_, __) => const MaterialPage(child: SettingsScreen()),
       ),
+      GoRoute(
+        path: '/test',
+        pageBuilder: (_, state) {
+          // final x = (state.extra as (String,)).$1;
+          return MaterialPage(child: TestScreen(data: state.extra as String));
+        },
+      ),
     ],
+    redirect: (BuildContext context, GoRouterState state) {
+      return null;
+    },
   );
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // <-- transparent status bar
-      statusBarIconBrightness:
-          Brightness.dark, // or Brightness.light for white icons
-      statusBarBrightness: Brightness.light, // for iOS
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
     ),
   );
   prefs = await SharedPreferences.getInstance();
@@ -68,12 +86,71 @@ final lightSchema = ColorScheme.fromSeed(
   brightness: Brightness.light,
 );
 
-class MainApp extends ConsumerWidget {
+class MainApp extends ConsumerStatefulWidget {
   final GoRouter router;
+
   const MainApp({required this.router, super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends ConsumerState<MainApp> {
+  late AppLinks _appLinks;
+  StreamSubscription<Uri>? _linkSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _appLinks = AppLinks();
+    _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDeepLinks() async {
+    // Handle the initial link
+    final uri = await _appLinks.getInitialLink();
+    if (uri != null) {
+      _handleAppLink(uri);
+    }
+
+    // Handle subsequent links
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      _handleAppLink(uri);
+    });
+  }
+
+  void _handleAppLink(Uri uri) async {
+    log('Received link: $uri');
+    // Check if it's a file URI and a .txt file
+    try {
+      if (uri.scheme == 'file' || uri.scheme == 'content') {
+        // Use uri_content to read the content from either file:// or content:// URI
+        final UriContent uriContent = UriContent();
+        final bytes = await uriContent.from(uri);
+        final fileContent = String.fromCharCodes(bytes);
+        log("File content: $fileContent");
+
+        if (_rootNavigatorKey.currentState != null) {
+          _rootNavigatorKey.currentState!.context.go(
+            "/test",
+            extra: fileContent,
+          );
+        }
+      }
+    } catch (e) {
+      log('Error reading file: $e');
+      // Handle error displaying file
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
@@ -167,7 +244,7 @@ class MainApp extends ConsumerWidget {
           ),
         ),
       ),
-      routerConfig: router,
+      routerConfig: widget.router,
     );
   }
 }
