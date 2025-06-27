@@ -22,6 +22,7 @@ typedef HomeProps = ({
   FileNode? curFileNode,
   String? anchor,
 });
+typedef TestProps = ({String filePath, String data});
 
 SharedPreferences? prefs;
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -56,8 +57,10 @@ void main() async {
       GoRoute(
         path: '/test',
         pageBuilder: (_, state) {
-          // final x = (state.extra as (String,)).$1;
-          return MaterialPage(child: TestScreen(data: state.extra as String));
+          final data = state.extra as TestProps;
+          return MaterialPage(
+            child: TestScreen(filePath: data.filePath, data: data.data),
+          );
         },
       ),
     ],
@@ -136,10 +139,10 @@ class _MainAppState extends ConsumerState<MainApp> {
         final fileContent = String.fromCharCodes(bytes);
         log("File content: $fileContent");
 
-        if (_rootNavigatorKey.currentState != null) {
+        if (_rootNavigatorKey.currentState != null && mounted) {
           _rootNavigatorKey.currentState!.context.go(
             "/test",
-            extra: fileContent,
+            extra: (filePath: uri.path, data: fileContent),
           );
         }
       }

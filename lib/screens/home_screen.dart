@@ -16,7 +16,6 @@ import 'package:markdown_notes/settings/settings.dart';
 import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/notes_provider.dart';
 import 'package:markdown_notes/theme.dart';
-import 'package:markdown_notes/utils/anchor_service.dart';
 import 'package:markdown_notes/utils/traverse.dart';
 
 enum FileOpenType {
@@ -67,15 +66,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   bool openPreviousOpenedFile() {
     final path = Settings.getLastFilePath(projectNode.path);
-    if (path != null) {
-      final node = traverseForwardFromProjectNode(projectNode, path);
-      if (node != null) {
-        _handleData(node);
-        return true;
-      }
-      return false;
-    }
-    return false;
+    if (path == null) return false;
+    final node = traverseForwardFromProjectNode(projectNode, path);
+    if (node == null) return false;
+    _handleData(node);
+    return true;
   }
 
   void _pickFile() {

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:markdown_notes/components/code_block.dart';
+import 'package:markdown_notes/components/markdown_view.dart';
+import 'package:markdown_notes/constants.dart';
+import 'package:markdown_notes/theme.dart';
 
 class TestScreen extends StatefulWidget {
   final String data;
-  const TestScreen({required this.data, super.key});
+  final String filePath;
+  const TestScreen({required this.filePath, required this.data, super.key});
 
   @override
   State<TestScreen> createState() => _TestScreenState();
@@ -11,10 +16,38 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.brightnessOf(context);
+    final isDarkMode = brightness == Brightness.dark;
+    final language = widget.filePath.split('.').last;
+    final fileName = widget.filePath.split('/').last;
+    final isMarkdown = language == 'md' || language == 'markdown';
+    final conditionBg = isMarkdown
+        ? AppTheme.from(brightness).background
+        : (isDarkMode ? codeBlockDarkTheme : codeBlockLightTheme)['root']!
+              .backgroundColor!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Test Screen')),
-      body: Center(
-        child: Text(widget.data, style: const TextStyle(fontSize: 24)),
+      backgroundColor: conditionBg,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(backgroundColor: conditionBg, title: Text(fileName)),
+            SliverToBoxAdapter(
+              child: !isMarkdown
+                  ? CodeBlock(
+                      codeContent: widget.data,
+                      isDarkMode: isDarkMode,
+                      language: language,
+                      isFullSize: true,
+                    )
+                  : MarkdownView(
+                      data: widget.data,
+                      onLinkTap: (s) {},
+                      preAnchor: null,
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
