@@ -263,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _codeBlockFontSizeController.text,
               );
               if (parseValue != null && parseValue > 0 && parseValue <= 32) {
-                MdSettings.codePageFontSize = parseValue;
+                MdSettings.codeBlockFontSize = parseValue;
                 setState(() {});
                 return true;
               } else {
