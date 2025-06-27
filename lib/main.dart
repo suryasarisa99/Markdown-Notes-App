@@ -11,7 +11,7 @@ import 'package:markdown_notes/models/file_node.dart';
 import 'package:markdown_notes/providers/theme_provider.dart';
 import 'package:markdown_notes/screens/home_screen.dart';
 import 'package:markdown_notes/screens/initial_screen.dart';
-import 'package:markdown_notes/screens/test_screen.dart';
+import 'package:markdown_notes/screens/file_screen.dart';
 import 'package:markdown_notes/settings/settings_screen.dart';
 import 'package:markdown_notes/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,11 +55,11 @@ void main() async {
         pageBuilder: (_, __) => const MaterialPage(child: SettingsScreen()),
       ),
       GoRoute(
-        path: '/test',
+        path: '/file',
         pageBuilder: (_, state) {
           final data = state.extra as TestProps;
           return MaterialPage(
-            child: TestScreen(filePath: data.filePath, data: data.data),
+            child: FileScreen(filePath: data.filePath, data: data.data),
           );
         },
       ),
@@ -137,11 +137,11 @@ class _MainAppState extends ConsumerState<MainApp> {
         final UriContent uriContent = UriContent();
         final bytes = await uriContent.from(uri);
         final fileContent = String.fromCharCodes(bytes);
-        log("File content: $fileContent");
+        // log("File content: $fileContent");
 
         if (_rootNavigatorKey.currentState != null && mounted) {
           _rootNavigatorKey.currentState!.context.go(
-            "/test",
+            "/file",
             extra: (filePath: uri.path, data: fileContent),
           );
         }

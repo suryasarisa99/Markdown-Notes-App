@@ -4,16 +4,16 @@ import 'package:markdown_notes/components/markdown_view.dart';
 import 'package:markdown_notes/constants.dart';
 import 'package:markdown_notes/theme.dart';
 
-class TestScreen extends StatefulWidget {
+class FileScreen extends StatefulWidget {
   final String data;
   final String filePath;
-  const TestScreen({required this.filePath, required this.data, super.key});
+  const FileScreen({required this.filePath, required this.data, super.key});
 
   @override
-  State<TestScreen> createState() => _TestScreenState();
+  State<FileScreen> createState() => _FileScreenState();
 }
 
-class _TestScreenState extends State<TestScreen> {
+class _FileScreenState extends State<FileScreen> {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.brightnessOf(context);
