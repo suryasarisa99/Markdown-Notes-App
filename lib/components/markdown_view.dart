@@ -24,6 +24,8 @@ class MarkdownView extends StatefulWidget {
 }
 
 class _MarkdownViewState extends State<MarkdownView> {
+  final tocController = TocController();
+
   @override
   void initState() {
     super.initState();
@@ -60,107 +62,131 @@ class _MarkdownViewState extends State<MarkdownView> {
     final codeBlockTheme = isDarkMode
         ? codeBlockDarkTheme
         : codeBlockLightTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      child: MarkdownWidget(
-        data: widget.data,
-        physics: NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        config: config.copy(
-          configs: [
-            preConfig.copy(
-              decoration: BoxDecoration(
-                color: codeBlockTheme['root']?.backgroundColor,
-                borderRadius: BorderRadius.circular(6.0),
+    return Row(
+      children: [
+        Expanded(child: TocWidget(controller: tocController)),
+        Expanded(
+          flex: 3,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: MarkdownWidget(
+              data: widget.data,
+              tocController: tocController,
+              config: config.copy(
+                configs: [
+                  preConfig.copy(
+                    decoration: BoxDecoration(
+                      color: codeBlockTheme['root']?.backgroundColor,
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                    theme: codeBlockTheme,
+                    textStyle: TextStyle(
+                      fontSize: MdSettings.codeBlockFontSize,
+                    ),
+                  ),
+                  HrConfig(
+                    color: isDarkMode
+                        ? Colors.grey.shade500
+                        : Colors.grey.shade400,
+                  ),
+                  TableConfig(
+                    border: TableBorder.all(
+                      color: isDarkMode
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade400,
+                      width: 1.0,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    headerRowDecoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20.0),
+                      color: codeBlockTheme['tableHeader']?.backgroundColor,
+                    ),
+                    wrapper: (table) => SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: table,
+                    ),
+                  ),
+                  H1Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h1,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  H2Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h2,
+                      fontSize: 25,
+                    ),
+                  ),
+                  H3Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h3,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  H4Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h4,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  H5Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h5,
+                      fontSize: 18,
+                    ),
+                  ),
+                  H6Config(
+                    style: TextStyle(
+                      color: theme.markdownColors.h6,
+                      fontSize: 16,
+                    ),
+                  ),
+                  ListConfig(marginLeft: 24),
+                  ListConfig(),
+                  BlockquoteConfig(
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                  ),
+                  CodeConfig(
+                    style: TextStyle(
+                      backgroundColor: theme.markdownColors.inlineCodeBg,
+                      color: theme.markdownColors.inlineCodeTxt,
+                    ),
+                  ),
+                  LinkConfig(
+                    // onTap: widget.onLinkTap,
+                    onTap: (url) async {
+                      if (url.startsWith("http") || url.startsWith("www")) {
+                        // on external links
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          log("Opening URL: $url");
+                          launchUrl(uri, mode: LaunchMode.externalApplication);
+                        } else {
+                          log("Cannot launch URL: $url");
+                        }
+                      } else if (url.startsWith('#')) {
+                        // markdown current page navigation
+                        final anchor = url.substring(1);
+                        log("scrolling to anchor: $url");
+                      } else {
+                        // markdown another notes page
+                        widget.onLinkTap?.call(url);
+                      }
+                    },
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.blueAccent : Colors.blue,
+                    ),
+                  ),
+                ],
               ),
-              theme: codeBlockTheme,
-              textStyle: TextStyle(fontSize: MdSettings.codeBlockFontSize),
             ),
-            HrConfig(
-              color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade400,
-            ),
-            TableConfig(
-              border: TableBorder.all(
-                color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade400,
-                width: 1.0,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              headerRowDecoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: codeBlockTheme['tableHeader']?.backgroundColor,
-              ),
-              wrapper: (table) => SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: table,
-              ),
-            ),
-            H1Config(
-              style: TextStyle(
-                color: theme.markdownColors.h1,
-                fontSize: 28,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            H2Config(
-              style: TextStyle(color: theme.markdownColors.h2, fontSize: 25),
-            ),
-            H3Config(
-              style: TextStyle(
-                color: theme.markdownColors.h3,
-                fontSize: 22,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            H4Config(
-              style: TextStyle(
-                color: theme.markdownColors.h4,
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            H5Config(
-              style: TextStyle(color: theme.markdownColors.h5, fontSize: 18),
-            ),
-            H6Config(
-              style: TextStyle(color: theme.markdownColors.h6, fontSize: 16),
-            ),
-            ListConfig(marginLeft: 24),
-            ListConfig(),
-            BlockquoteConfig(padding: EdgeInsets.symmetric(horizontal: 30)),
-            CodeConfig(
-              style: TextStyle(
-                backgroundColor: theme.markdownColors.inlineCodeBg,
-                color: theme.markdownColors.inlineCodeTxt,
-              ),
-            ),
-            LinkConfig(
-              // onTap: widget.onLinkTap,
-              onTap: (url) async {
-                if (url.startsWith("http") || url.startsWith("www")) {
-                  // on external links
-                  final uri = Uri.parse(url);
-                  if (await canLaunchUrl(uri)) {
-                    log("Opening URL: $url");
-                    launchUrl(uri, mode: LaunchMode.externalApplication);
-                  } else {
-                    log("Cannot launch URL: $url");
-                  }
-                } else if (url.startsWith('#')) {
-                  // markdown current page navigation
-                  final anchor = url.substring(1);
-                  log("scrolling to anchor: $url");
-                } else {
-                  // markdown another notes page
-                  widget.onLinkTap?.call(url);
-                }
-              },
-              style: TextStyle(
-                color: isDarkMode ? Colors.blueAccent : Colors.blue,
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

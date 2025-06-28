@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:markdown_widget/markdown_widget.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class MarkdownWidget extends StatefulWidget {
@@ -57,8 +57,10 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
   ///[TocController] combines [TocWidget] and [MarkdownWidget]
   TocController? _tocController;
 
-  ///[AutoScrollController] provides the scroll to index mechanism
-  final AutoScrollController controller = AutoScrollController();
+  //[ItemScrollController] provides the scroll to index mechanism
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
 
   ///every [VisibilityDetector]'s child which is visible will be kept with [indexTreeSet]
   final indexTreeSet = SplayTreeSet<int>((a, b) => a - b);
@@ -71,7 +73,7 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
     super.initState();
     _tocController = widget.tocController;
     _tocController?.jumpToIndexCallback = (index) {
-      controller.scrollToIndex(index, preferPosition: AutoScrollPosition.begin);
+      itemScrollController.jumpTo(index: index);
     };
     updateState();
   }
@@ -99,7 +101,6 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
   @override
   void dispose() {
     clearState();
-    controller.dispose();
     _tocController?.jumpToIndexCallback = null;
     super.dispose();
   }
@@ -115,14 +116,14 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
         isForward = direction == ScrollDirection.forward;
         return true;
       },
-      child: ListView.builder(
-        shrinkWrap: widget.shrinkWrap,
+      child: ScrollablePositionedList.builder(
+        itemScrollController: itemScrollController,
+        itemPositionsListener: itemPositionsListener,
         physics: widget.physics,
-        controller: controller,
-        itemBuilder: (ctx, index) => wrapByAutoScroll(index,
-            wrapByVisibilityDetector(index, _widgets[index]), controller),
+        itemBuilder: (ctx, index) =>
+            wrapByVisibilityDetector(index, _widgets[index]),
         itemCount: _widgets.length,
-        padding: widget.padding,
+        padding: widget.padding as EdgeInsets?,
       ),
     );
     return widget.selectable
@@ -159,16 +160,4 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
     updateState();
     super.didUpdateWidget(widget);
   }
-}
-
-///wrap widget by [AutoScrollTag] that can use [AutoScrollController] to scrollToIndex
-Widget wrapByAutoScroll(
-    int index, Widget child, AutoScrollController controller) {
-  return AutoScrollTag(
-    key: Key(index.toString()),
-    controller: controller,
-    index: index,
-    child: child,
-    highlightColor: Colors.black.toOpacity(0.1),
-  );
 }

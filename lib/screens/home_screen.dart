@@ -242,12 +242,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             body: RefreshIndicator(
               onRefresh: onRefresh,
               child: SafeArea(
-                child: CustomScrollView(
-                  controller: _scrollController,
-                  slivers: [
-                    _buildAppBar(conditionBg, theme),
-                    SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
-                  ],
+                // child: CustomScrollView(
+                //   controller: _scrollController,
+                //   slivers: [
+                //     _buildAppBar(conditionBg, theme),
+                //     SliverToBoxAdapter(child: _buildPage(isDarkMode, theme)),
+                //   ],
+                // ),
+                child: NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [_buildAppBar(conditionBg, theme)];
+                  },
+                  body: _buildPage(isDarkMode, theme),
                 ),
               ),
             ),

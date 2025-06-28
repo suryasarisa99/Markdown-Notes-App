@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:markdown_widget/config/configs.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../widget/blocks/leaf/heading.dart';
 import '../widget/markdown.dart';
@@ -110,7 +110,9 @@ class TocWidget extends StatefulWidget {
 }
 
 class _TocWidgetState extends State<TocWidget> {
-  final AutoScrollController controller = AutoScrollController();
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener =
+      ItemPositionsListener.create();
   int currentIndex = 0;
   final List<Toc> _tocList = [];
 
@@ -137,8 +139,7 @@ class _TocWidgetState extends State<TocWidget> {
       final selfIndex = tocController._index2toc[index]?.selfIndex;
       if (selfIndex != null && _tocList.length > selfIndex) {
         refreshIndex(selfIndex);
-        controller.scrollToIndex(currentIndex,
-            preferPosition: AutoScrollPosition.begin);
+        // itemScrollController.jumpTo(index: index);
       }
     };
     _refreshList(tocController.tocList);
@@ -152,7 +153,6 @@ class _TocWidgetState extends State<TocWidget> {
   @override
   void dispose() {
     super.dispose();
-    controller.dispose();
     _tocList.clear();
     tocController._onIndexChangedCallback = null;
     tocController._onListChanged = null;
@@ -160,10 +160,10 @@ class _TocWidgetState extends State<TocWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: widget.shrinkWrap,
+    return ScrollablePositionedList.builder(
+      itemScrollController: itemScrollController,
+      itemPositionsListener: itemPositionsListener,
       physics: widget.physics,
-      controller: controller,
       itemBuilder: (ctx, index) {
         final currentToc = _tocList[index];
         bool isCurrentToc = index == currentIndex;
@@ -175,8 +175,9 @@ class _TocWidgetState extends State<TocWidget> {
         }
         final node = currentToc.node.copy(
             headingConfig: _TocHeadingConfig(
-                isCurrentToc ? widget.currentTocTextStyle : widget.tocTextStyle,
-                currentToc.node.headingConfig.tag));
+          isCurrentToc ? widget.currentTocTextStyle : widget.tocTextStyle,
+          currentToc.node.headingConfig.tag,
+        ));
         final child = ListTile(
           title: Container(
             margin: EdgeInsets.only(
@@ -188,10 +189,10 @@ class _TocWidgetState extends State<TocWidget> {
             refreshIndex(index);
           },
         );
-        return wrapByAutoScroll(index, child, controller);
+        return child;
       },
       itemCount: _tocList.length,
-      padding: widget.padding,
+      padding: widget.padding as EdgeInsets?,
     );
   }
 
