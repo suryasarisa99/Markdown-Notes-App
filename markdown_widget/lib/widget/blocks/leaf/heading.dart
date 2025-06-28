@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../config/configs.dart';
+import '../../inlines/code.dart';
 import '../../proxy_rich_text.dart';
 import '../../span_node.dart';
 import '../../widget_visitor.dart';
@@ -14,6 +15,14 @@ class HeadingNode extends ElementNode {
   final WidgetVisitor visitor;
 
   HeadingNode(this.headingConfig, this.visitor);
+
+  String getText() {
+    return children.map((e) {
+      if (e is TextNode) return e.text;
+      if (e is CodeNode) return e.text;
+      return '';
+    }).join(" ");
+  }
 
   @override
   InlineSpan build() {

@@ -14,10 +14,12 @@ import '../widget/proxy_rich_text.dart';
 class TocController {
   ///key is index of widgets, value is [Toc]
   final LinkedHashMap<int, Toc> _index2toc = LinkedHashMap();
+  final Map<String, int> _anchorToIndexMap = {};
 
   ValueCallback<int>? _jumpToIndexCallback;
   ValueCallback<int>? _onIndexChangedCallback;
   ValueCallback<List<Toc>>? _onListChanged;
+  ValueCallback<Map<String, int>>? _onAnchorToIndexChanged;
 
   void setTocList(List<Toc> list) {
     _index2toc.clear();
@@ -25,6 +27,25 @@ class TocController {
       _index2toc[toc.widgetIndex] = toc;
     }
     _onListChanged?.call(list);
+  }
+
+  void setAnchorToIndexMap(Map<String, int> map) {
+    // clear previous anchors
+    _anchorToIndexMap.clear();
+    // add new anchors
+    for (final entry in map.entries) {
+      _anchorToIndexMap[entry.key] = entry.value;
+    }
+    _onAnchorToIndexChanged?.call(_anchorToIndexMap);
+  }
+
+  void jumpToAnchor(String anchor) {
+    final index = _anchorToIndexMap[anchor];
+    if (index != null) {
+      _jumpToIndexCallback?.call(index);
+    } else {
+      debugPrint('Anchor "$anchor" not found in TocController.');
+    }
   }
 
   set jumpToIndexCallback(ValueCallback<int>? value) {

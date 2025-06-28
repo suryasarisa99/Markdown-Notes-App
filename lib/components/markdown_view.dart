@@ -172,6 +172,7 @@ class _MarkdownViewState extends State<MarkdownView> {
                         // markdown current page navigation
                         final anchor = url.substring(1);
                         log("scrolling to anchor: $url");
+                        tocController.jumpToAnchor(anchor);
                       } else {
                         // markdown another notes page
                         widget.onLinkTap?.call(url);

@@ -84,8 +84,9 @@ class MarkdownWidgetState extends State<MarkdownWidget> {
     markdownGenerator = widget.markdownGenerator ?? MarkdownGenerator();
     final result = markdownGenerator.buildWidgets(
       widget.data,
-      onTocList: (tocList) {
+      onTocList: (tocList, anchorToIndexMap) {
         _tocController?.setTocList(tocList);
+        _tocController?.setAnchorToIndexMap(anchorToIndexMap);
       },
       config: widget.config,
     );
